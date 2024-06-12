@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Collabsphere Sign in
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/signin.css') }}">
+
+<div class="container-fluid d-flex justify-content-center align-items-center" style="height: 80vh; background-color: #f8f9fa;">
+    <div class="row w-100">
+        <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-sm-10 offset-sm-1 mt-5">
+            <div class="form-container">
+                <h2 class="text-center mb-4">Sign in</h2>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="inputUserOrEmail" class="form-label">Username or Email address</label>
+                        <input type="text" class="form-control" id="inputUserOrEmail" name="username" aria-describedby="userOrEmailHelp" aria-label="Username or Email" required placeholder="Enter your username or email">
+                        <div id="userOrEmailHelp" class="form-text"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="inputPassword" name="password" aria-label="Password" required autocomplete="off" placeholder="Enter your password">
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMeCheck" name="remember_me">
+                        <label class="form-check-label" for="rememberMeCheck">Remember me</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Sign in</button>
+                    <div class="text-center">
+                        Don't have an account? <a href="{{ url_for('register') }}">Sign up</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

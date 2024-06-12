@@ -10,27 +10,21 @@ class User(db.Model):
     username = db.Column(db.String(32), unique=True, nullable=False)
     passhash = db.Column(db.String(256), nullable=False)
     usertype = db.Column(db.String(32), nullable=False)
-    
+    name = db.Column(db.String(64), nullable=False)  # Increase size to accommodate both first and last name
+    email = db.Column(db.String(32), nullable=False)
     influencers = db.relationship('Influencer', backref='user', lazy=True)
     sponsors = db.relationship('Sponsor', backref='user', lazy=True)
-    
+
 class Influencer(db.Model):
     influencerid = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), db.ForeignKey('user.username'), nullable=False)
-    first_name = db.Column(db.String(32), nullable=False)
-    last_name = db.Column(db.String(32), nullable=False)
-    email = db.Column(db.String(32), nullable=False)
     location = db.Column(db.String(32), nullable=False)
     demographic = db.Column(db.String(32), nullable=False)
     bio = db.Column(db.String(512), nullable=False)
     
-    
-    
 class Sponsor(db.Model):
     sponsorid = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), db.ForeignKey('user.username'), nullable=False)
-    company = db.Column(db.String(32), nullable=False)
-    email = db.Column(db.String(32), nullable=False)
     location = db.Column(db.String(32), nullable=False)
     industry = db.Column(db.String(32), nullable=False)
     website = db.Column(db.String(32), nullable=False)
