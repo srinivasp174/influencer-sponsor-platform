@@ -2,3 +2,4 @@ venv/
 instance/
 .env
 __pycache__
+static/profile_pic/

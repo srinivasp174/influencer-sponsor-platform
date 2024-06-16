@@ -10,7 +10,8 @@ class User(db.Model):
     username = db.Column(db.String(32), unique=True, nullable=False)
     passhash = db.Column(db.String(256), nullable=False)
     usertype = db.Column(db.String(32), nullable=False)
-    name = db.Column(db.String(64), nullable=False)  # Increase size to accommodate both first and last name
+    name = db.Column(db.String(64), nullable=False) 
+    profile_pic = db.Column(db.String(256))
     email = db.Column(db.String(32), nullable=False)
     influencers = db.relationship('Influencer', backref='user', lazy=True)
     sponsors = db.relationship('Sponsor', backref='user', lazy=True)

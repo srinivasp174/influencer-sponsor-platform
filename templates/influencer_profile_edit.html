@@ -1,0 +1,18 @@
+{% extends 'influencer_settings.html' %}
+
+{% block content %}
+{{ super() }}
+<div class="container mt-0"> <!-- Ensure container is consistent -->
+    <div class="row"> <!-- Use row for proper alignment -->
+        <div class="col-md-8 offset-md-4"> <!-- Adjust column size and offset to center the form -->
+            <form action="{{ url_for('upload_profile_pic') }}" method="post" enctype="multipart/form-data" class="mt-3">
+                <div class="mb-3">
+                    <label for="profilePic" class="form-label">Upload new profile picture</label>
+                    <input class="form-control" type="file" id="profilePic" name="profile_pic">
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

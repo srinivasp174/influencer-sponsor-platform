@@ -1,8 +1,10 @@
+import os
 from flask import render_template, request, redirect, url_for, flash, session
 from app import app
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Influencer, Sponsor, Campaign, Category, InfluencerCategory, SocialMedia
-
+from werkzeug.utils import secure_filename
+from models import db, User
+from functools import wraps
 
 @app.context_processor
 def inject_is_index():
@@ -10,8 +12,16 @@ def inject_is_index():
         'is_index': request.path == '/',
         'is_login': request.path == '/login',
         'is_register': request.path == '/register',
-        'is_influencer': request.path == '/influencer/profile'
+        'is_influencer': '/influencer_profile' in request.path
     }
+
+@app.context_processor
+def inject_user():
+    return {
+        'logged_in': 'username' in session,
+        'username': session.get('username')
+    }
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -41,10 +51,7 @@ def login():
         session['name'] = user.name
         session['email'] = user.email
 
-        if user.usertype == 'influencer':
-            return redirect(url_for('influencer_profile'))
-        elif user.usertype == 'sponsor':
-            return redirect(url_for('sponsor_profile'))
+        return redirect(url_for('influencer_profile', username=session['username']))
         
     return render_template('login.html')
 
@@ -70,6 +77,7 @@ def register():
         if len(password) < 8:
             flash('Password must be at least 8 characters', 'danger')
             return redirect(url_for('register'))
+
         user = User.query.filter_by(username=username).first()
         if user:
             flash('Username already exists', 'danger')
@@ -82,7 +90,8 @@ def register():
 
         name = f"{firstname} {lastname}"
         passhash = generate_password_hash(password)
-        new_user = User(username=username, passhash=passhash, usertype=usertype, name=name, email=email)
+        profile_pic = 'default_profile_pic.jpeg'
+        new_user = User(username=username, passhash=passhash, usertype=usertype, name=name, profile_pic=profile_pic, email=email)
         db.session.add(new_user)
         db.session.commit()
 
@@ -91,6 +100,75 @@ def register():
 
     return render_template('register.html')
 
-@app.route('/influencer/profile')
-def influencer_profile():
-    return render_template('influencer_profile.html')
+def auth_required(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            flash('Please login to continue', 'danger')
+            return redirect(url_for('login'))
+        return func(*args, **kwargs)
+    return decorated_function
+
+
+@app.route('/logout')
+@auth_required
+def logout():
+    session.pop('username')
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('index'))
+
+
+@app.route('/<username>')
+@auth_required
+def influencer_profile(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return render_template('influencer_profile.html', user=user)
+    else:
+        flash('User not found', 'danger')
+        return redirect(url_for('index'))
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+@app.route('/upload_profile_pic', methods=['POST'])
+@auth_required
+def upload_profile_pic():
+    if 'profile_pic' not in request.files:
+        flash('No profile picture uploaded', 'danger')
+        return redirect(url_for('influencer_profile', username=session['username']))
+    
+    file = request.files['profile_pic']
+    if file.filename == '':
+        flash('No selected file', 'danger')
+        return redirect(url_for('influencer_profile', username=session['username']))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        
+        file.save(filepath)
+        
+        user = User.query.filter_by(username=session['username']).first()
+        user.profile_pic = filename
+        db.session.commit()
+        
+        flash('Profile picture uploaded successfully', 'success')
+        return redirect(url_for('influencer_profile', username=session['username']))
+    
+    else:
+        flash('Invalid file type, only png, jpg, jpeg and gif are allowed', 'danger')
+        return redirect(url_for('influencer_profile', username=session['username']))
+    
+    
+@app.route('/settings/profile')
+@auth_required
+def influencer_profile_edit():
+    user = User.query.filter_by(username=session['username']).first()
+    if user:
+        return render_template('influencer_profile_edit.html', user=user)
+    else:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
