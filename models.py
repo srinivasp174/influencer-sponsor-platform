@@ -11,48 +11,48 @@ class User(db.Model):
     passhash = db.Column(db.String(256), nullable=False)
     usertype = db.Column(db.String(32), nullable=False)
     name = db.Column(db.String(64), nullable=False) 
-    profile_pic = db.Column(db.String(256))
-    email = db.Column(db.String(32), nullable=False)
+    email = db.Column(db.String(32), nullable=True)
+    profile_pic = db.Column(db.String(256), nullable=True)
     influencers = db.relationship('Influencer', backref='user', lazy=True)
     sponsors = db.relationship('Sponsor', backref='user', lazy=True)
 
 class Influencer(db.Model):
     influencerid = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), db.ForeignKey('user.username'), nullable=False)
-    location = db.Column(db.String(32), nullable=False)
-    demographic = db.Column(db.String(32), nullable=False)
-    bio = db.Column(db.String(512), nullable=False)
+    username = db.Column(db.String(32), db.ForeignKey('user.username'), nullable=True)
+    location = db.Column(db.String(32), nullable=True)
+    demographic = db.Column(db.String(32), nullable=True)
+    bio = db.Column(db.String(512), nullable=True)
     
 class Sponsor(db.Model):
     sponsorid = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), db.ForeignKey('user.username'), nullable=False)
-    location = db.Column(db.String(32), nullable=False)
-    industry = db.Column(db.String(32), nullable=False)
-    website = db.Column(db.String(32), nullable=False)
+    username = db.Column(db.String(32), db.ForeignKey('user.username'), nullable=True)
+    location = db.Column(db.String(32), nullable=True)
+    industry = db.Column(db.String(32), nullable=True)
+    website = db.Column(db.String(32), nullable=True)
     
 class Campaign(db.Model):
     campaignid = db.Column(db.Integer, primary_key=True)
-    sponsorid = db.Column(db.Integer, db.ForeignKey('sponsor.sponsorid'), nullable=False)
-    influencerid = db.Column(db.Integer, db.ForeignKey('influencer.influencerid'), nullable=False)
-    campaign_name = db.Column(db.String(32), nullable=False)
-    campaign_description = db.Column(db.String(256), nullable=False)
-    campaign_start = db.Column(db.DateTime, nullable=False)
-    campaign_end = db.Column(db.DateTime, nullable=False)
-    campaign_budget = db.Column(db.Integer, nullable=False)
-    campaign_status = db.Column(db.String(32), nullable=False)
+    sponsorid = db.Column(db.Integer, db.ForeignKey('sponsor.sponsorid'), nullable=True)
+    influencerid = db.Column(db.Integer, db.ForeignKey('influencer.influencerid'), nullable=True)
+    campaign_name = db.Column(db.String(32), nullable=True)
+    campaign_description = db.Column(db.String(256), nullable=True)
+    campaign_start = db.Column(db.DateTime, nullable=True)
+    campaign_end = db.Column(db.DateTime, nullable=True)
+    campaign_budget = db.Column(db.Integer, nullable=True)
+    campaign_status = db.Column(db.String(32), nullable=True)
     
     sponsor = db.relationship('Sponsor', backref='campaigns', lazy=True)
     influencer = db.relationship('Influencer', backref='campaigns', lazy=True)
     
 class Category(db.Model):
     categoryid = db.Column(db.Integer, primary_key=True)
-    category_name = db.Column(db.String(32), nullable=False)
+    category_name = db.Column(db.String(32), nullable=True)
     
     influencers = db.relationship('Influencer', secondary='influencer_category', backref='categories', lazy='dynamic')
     
 class InfluencerCategory(db.Model):
     influencercategoryid = db.Column(db.Integer, primary_key=True)
-    influencerid = db.Column(db.Integer, db.ForeignKey('influencer.influencerid'), nullable=False)
+    influencerid = db.Column(db.Integer, db.ForeignKey('influencer.influencerid'), nullable=True)
     categoryid = db.Column(db.Integer, db.ForeignKey('category.categoryid'), nullable=False)
     
     influencer = db.relationship('Influencer', backref='influencercategory', lazy=True)

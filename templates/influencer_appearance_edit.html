@@ -1,21 +1,16 @@
-{% extends 'layout.html' %}
-{% block title %}
-    Collabsphere Settings
-{% endblock %}
+{% extends 'influencer_settings.html' %}
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='styles/influencer_settings.css') }}">
 
-<div class="custom-padding">
+
+<div class=" mt-0 custom-padding"> <!-- Adjusted container -->
     <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-3">
             <p><a href="{{ url_for('influencer_profile_edit') }}">Profile</a></p>
             <p><a href="{{ url_for('influencer_account_edit') }}">Account</a></p>
             <p><a href="{{ url_for('influencer_appearance_edit') }}">Appearance</a></p>
             <p><a href="{{ url_for('influencer_security_edit') }}">Security</a></p>
             <p><a href="{{url_for('influencer_collabs_edit')}}">Collaborations</a></p>
         </div>
-    </div>
-</div>
-
 {% endblock %}

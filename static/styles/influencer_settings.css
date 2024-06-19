@@ -1,3 +1,9 @@
 .custom-padding {
     padding-left: 3%;
+    padding-right: 15px;
+}
+
+.profile-picture img {
+    max-width: 150%;
+    height: auto;
 }

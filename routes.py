@@ -1,9 +1,10 @@
 import os
-from flask import render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from app import app
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from models import db, User
+from datetime import datetime
+from models import db, User, Influencer, Sponsor, Campaign, Category, InfluencerCategory, SocialMedia
 from functools import wraps
 
 @app.context_processor
@@ -90,8 +91,8 @@ def register():
 
         name = f"{firstname} {lastname}"
         passhash = generate_password_hash(password)
-        profile_pic = 'default_profile_pic.jpeg'
-        new_user = User(username=username, passhash=passhash, usertype=usertype, name=name, profile_pic=profile_pic, email=email)
+        profile_pic = 'default_profile_pic.jpg'
+        new_user = User(username=username, passhash=passhash, usertype=usertype, name=name, email=email, profile_pic=profile_pic)
         db.session.add(new_user)
         db.session.commit()
 
@@ -136,39 +137,102 @@ def allowed_file(filename):
 def upload_profile_pic():
     if 'profile_pic' not in request.files:
         flash('No profile picture uploaded', 'danger')
-        return redirect(url_for('influencer_profile', username=session['username']))
-    
+        return redirect(url_for('influencer_profile_edit'))
+
     file = request.files['profile_pic']
     if file.filename == '':
         flash('No selected file', 'danger')
-        return redirect(url_for('influencer_profile', username=session['username']))
+        return redirect(url_for('influencer_profile_edit'))
 
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        original_filename = secure_filename(file.filename)
+        extension = original_filename.rsplit('.', 1)[1].lower()
+        new_filename = f"user_{datetime.now().strftime('%Y%m%d%H%M%S')}.{extension}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
         
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         
         file.save(filepath)
         
         user = User.query.filter_by(username=session['username']).first()
-        user.profile_pic = filename
+        user.profile_pic = new_filename
         db.session.commit()
         
         flash('Profile picture uploaded successfully', 'success')
-        return redirect(url_for('influencer_profile', username=session['username']))
+        return redirect(url_for('influencer_profile_edit', username=session['username']))
     
     else:
-        flash('Invalid file type, only png, jpg, jpeg and gif are allowed', 'danger')
-        return redirect(url_for('influencer_profile', username=session['username']))
+        flash('Invalid file type, only png, jpg, jpeg, and gif are allowed', 'danger')
+        return redirect(url_for('influencer_profile_edit', username=session['username']))
     
-    
-@app.route('/settings/profile')
+@app.route('/settings/profile', methods=['GET', 'POST'])
 @auth_required
 def influencer_profile_edit():
     user = User.query.filter_by(username=session['username']).first()
+    influencer = Influencer.query.filter_by(username=session['username']).first()
+
+    if request.method == 'POST':
+        firstname = request.form.get('firstname')
+        lastname = request.form.get('lastname')
+        email = request.form.get('email')
+        bio = request.form.get('bio')
+
+        if firstname:
+            user.name = f"{firstname} {user.name.split(' ', 1)[1]}"
+        if lastname:
+            user.name = f"{user.name.split(' ', 1)[0]} {lastname}"
+        if email:
+            user.email = email
+        if bio and influencer:
+            influencer.bio = bio
+
+        db.session.commit()
+        flash('Profile updated successfully', 'success')
+        return redirect(url_for('influencer_profile_edit'))
+
     if user:
-        return render_template('influencer_profile_edit.html', user=user)
+        return render_template('influencer_profile_edit.html', user=user, influencer=influencer)
+    else:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+
+    
+@app.route('/settings/account')
+@auth_required
+def influencer_account_edit():
+    user = User.query.filter_by(username=session['username']).first()
+    if user:
+        return render_template('influencer_account_edit.html', user=user)
+    else:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+    
+@app.route('/settings/appearance')
+@auth_required
+def influencer_appearance_edit():
+    user = User.query.filter_by(username=session['username']).first()
+    if user:
+        return render_template('influencer_appearance_edit.html', user=user)
+    else:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+    
+@app.route('/settings/security')
+@auth_required
+def influencer_security_edit():
+    user = User.query.filter_by(username=session['username']).first()
+    if user:
+        return render_template('influencer_security_edit.html', user=user)
+    else:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+    
+@app.route('/settings/collaborations')
+@auth_required
+def influencer_collabs_edit():
+    user = User.query.filter_by(username=session['username']).first()
+    if user:
+        return render_template('influencer_collabs_edit.html', user=user)
     else:
         flash('User not found.', 'danger')
         return redirect(url_for('login'))
