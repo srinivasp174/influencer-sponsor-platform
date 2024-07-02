@@ -12,15 +12,6 @@
         <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-sm-10 offset-sm-1 mt-5">
             <div class="form-container">
                 <h2 class="text-center mb-4">Sign in</h2>
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
                 <form method="post">
                     <div class="mb-3">
                         <label for="inputUserOrEmail" class="form-label">Username or Email address</label>

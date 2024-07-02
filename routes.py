@@ -4,7 +4,7 @@ from app import app
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from models import db, User, Influencer, Sponsor, Campaign, Category, InfluencerCategory, SocialMedia
+from models import db, User, Influencer, Sponsor, Campaign, Category, SocialMedia, influencer_category
 from functools import wraps
 
 @app.context_processor
@@ -96,7 +96,15 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        flash('Registration successful! You can now log in.', 'success')
+        if usertype == 'influencer':
+            influencer = Influencer(userid=new_user.userid)
+            db.session.add(influencer)
+        elif usertype == 'sponsor':
+            sponsor = Sponsor(userid=new_user.userid)
+            db.session.add(sponsor)
+        db.session.commit()
+
+        flash('User registered successfully', 'success')
         return redirect(url_for('login'))
 
     return render_template('register.html')
@@ -124,10 +132,13 @@ def logout():
 def influencer_profile(username):
     user = User.query.filter_by(username=username).first()
     if user:
-        return render_template('influencer_profile.html', user=user)
-    else:
-        flash('User not found', 'danger')
-        return redirect(url_for('index'))
+        if user.usertype=='influencer':
+            return render_template('influencer_profile.html', user=user)
+        elif user.sponsors:
+            return render_template('sponsor_profile.html', user=user)
+    flash('User not found', 'danger')
+    return redirect(url_for('register'))
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -169,34 +180,37 @@ def upload_profile_pic():
 @auth_required
 def influencer_profile_edit():
     user = User.query.filter_by(username=session['username']).first()
-    influencer = Influencer.query.filter_by(username=session['username']).first()
-
-    if request.method == 'POST':
-        firstname = request.form.get('firstname')
-        lastname = request.form.get('lastname')
-        email = request.form.get('email')
-        bio = request.form.get('bio')
-
-        if firstname:
-            user.name = f"{firstname} {user.name.split(' ', 1)[1]}"
-        if lastname:
-            user.name = f"{user.name.split(' ', 1)[0]} {lastname}"
-        if email:
-            user.email = email
-        if bio and influencer:
-            influencer.bio = bio
-
-        db.session.commit()
-        flash('Profile updated successfully', 'success')
-        return redirect(url_for('influencer_profile_edit'))
-
-    if user:
-        return render_template('influencer_profile_edit.html', user=user, influencer=influencer)
-    else:
+    if not user:
         flash('User not found.', 'danger')
         return redirect(url_for('login'))
 
-    
+    influencer = Influencer.query.filter_by(userid=user.userid).first()
+
+    if request.method == 'POST':
+        try:
+            firstname = request.form.get('firstname')
+            lastname = request.form.get('lastname')
+            email = request.form.get('email')
+            bio = request.form.get('bio')
+            location = request.form.get('location')
+
+            if firstname and lastname:
+                user.name = f"{firstname} {lastname}"
+            if email:
+                user.email = email
+            if bio and influencer:
+                influencer.bio = bio
+            if location and influencer:
+                influencer.location = location
+
+            db.session.commit()
+            flash('Profile updated successfully', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('An error occurred while updating the profile.', 'danger')
+        return redirect(url_for('influencer_profile_edit'))
+
+    return render_template('influencer_profile_edit.html', user=user, influencer=influencer)    
 @app.route('/settings/account')
 @auth_required
 def influencer_account_edit():
@@ -236,3 +250,17 @@ def influencer_collabs_edit():
     else:
         flash('User not found.', 'danger')
         return redirect(url_for('login'))
+    
+
+@app.route('/camapign/create')
+@auth_required
+def create_campaign():
+    user = User.query.filter_by(username=session['username']).first()
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+    sponsor = Sponsor.query.filter_by(userid=user.userid).first()
+    if user.usertype == 'influencer':
+        flash('You are not a Sponsor.', danger)
+        return redirect(url_for('influencer_profile'))
+    return render_template('create_campaign.html', user=user, sponsor=sponsor)

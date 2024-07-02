@@ -12,7 +12,7 @@
         <div class="col-lg-6 offset-lg-3 col-md-8 offset-md-2 col-sm-10 offset-sm-1 mt-5">
             <div class="form-container p-4 shadow-sm rounded bg-white">
                 <h2 class="text-center mb-4">Sign up</h2>
-                <form class="row g-3" method="post" action="{{ url_for('register') }}">
+                <form class="row g-3" method="post" action="{{ url_for('register') }}" oninput='up2.setCustomValidity(up2.value != up.value ? "Passwords do not match." : "")'>
                     <div class="col-12 mb-3">
                         <label class="form-label d-block">I am a</label>
                         <div class="btn-group w-100" role="group" aria-label="User Type">
