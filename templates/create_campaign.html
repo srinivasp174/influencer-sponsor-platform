@@ -8,30 +8,49 @@
                 <form method="post">
                     <div class="mb-3">
                         <label for="name" class="form-label"><strong>Campaign Title</strong></label>
-                        <input class="form-control mt-2" type="text" id="name" required>
+                        <input class="form-control mt-2" type="text" id="name" name="name" required>
                     </div>
                     <div class="mb-3">
                         <label for="description" class="form-label"><strong>Campaign Description</strong></label>
-                        <textarea class="form-control mt-2" type="text" id="description" style="height: 80px" aria-label="campaigndescription" required></textarea>
+                        <textarea class="form-control mt-2" id="description" name="description" style="height: 80px" aria-label="campaigndescription" required></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="picture" class="form-label"><strong>Campaign Picture</strong></label>
-
+                        <input class="form-control mt-2" type="file" id="picture" name="picture">
                     </div>
                     <div class="mb-3">
                         <label for="category" class="form-label"><strong>Category</strong></label>
-                        <select class="form-select mt-2" id="category" required>
-                            <option selected disabled value="">Select a category</option>
-                            <option value="1">Fashion</option>
-                            <option value="2">Beauty</option>
-                            <option value="3">Food</option>
-                            <option value="4">Travel</option>
-                            <option value="5">Fitness</option>
-                            <option value="6">Lifestyle</option>
+                        <select class="form-select mt-2" id="category" name="category[]" multiple="multiple" required>
+                            {% for category in categories %}
+                            <option value="{{ category.categoryid }}">{{ category.category_name }}</option>
+                            {% endfor %}
                         </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="budget" class="form-label"><strong>Budget</strong></label>
+                        <input class="form-control mt-2" type="number" id="budget" name="budget" required> 
+                    </div>
+                    <div class="mb-3">
+                        <label for="duration" class="form-label"><strong>Campaign Duration</strong></label>
+                        <input class="form-control mt-2" type="number" id="duration" name="duration" required>
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">Create Campaign</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#category').select2({
+                placeholder: 'Select a category',
+                maximumSelectionLength: 3,
+                allowClear: true
+            });
+        });
+    </script>
 {% endblock %}

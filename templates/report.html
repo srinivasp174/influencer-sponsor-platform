@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h2>Report User</h2>
+<form action="{{ url_for('report_user', user_id=user.id) }}" method="post">
+    <div class="form-group">
+        <label for="reason">Reason</label>
+        <textarea name="reason" id="reason" class="form-control" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Report</button>
+</form>
+{% endblock %}

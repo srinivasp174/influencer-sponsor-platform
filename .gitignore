@@ -5,3 +5,4 @@ __pycache__
 static/profile_pic/
 test.py
 templates/test.html
+migrations/

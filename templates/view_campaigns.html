@@ -1,0 +1,24 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h1>Available Campaigns</h1>
+    <div class="container mt-3">
+        <div class="row">
+            {% for campaign in campaigns %}
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ campaign.campaign_name }}</h5>
+                            <p class="card-text">{{ campaign.campaign_description }}</p>
+                            <p><strong>Budget:</strong> {{ campaign.campaign_budget }}</p>
+                            <p><strong>Duration:</strong> {{ campaign.campaign_duration }} days</p>
+                            <form action="{{ url_for('apply_campaign', campaign_id=campaign.campaignid) }}" method="post">
+                                <button type="submit" class="btn btn-primary">Apply</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

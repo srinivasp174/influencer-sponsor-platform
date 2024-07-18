@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Reports</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Reported By</th>
+            <th>Reported User</th>
+            <th>Reason</th>
+            <th>Timestamp</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.id }}</td>
+            <td>{{ report.reported_by }}</td>
+            <td>{{ report.reported_user_id }}</td>
+            <td>{{ report.reason }}</td>
+            <td>{{ report.timestamp }}</td>
+            <td>{{ report.status }}</td>
+            <td>
+                {% if report.status == 'Pending' %}
+                <form action="{{ url_for('resolve_report', report_id=report.id) }}" method="post">
+                    <button type="submit" class="btn btn-success">Resolve</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
