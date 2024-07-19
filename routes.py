@@ -396,49 +396,12 @@ def resolve_report(report_id):
     flash('Report resolved successfully.', 'success')
     return redirect(url_for('view_reports'))
 
-@app.route('/admin/profile')
-@auth_required  # Ensure this decorator is appropriately set for admin access
+@app.route('/admin_profile')
+@auth_required
 def admin_profile():
-    user = User.query.filter_by(username=session.get('username')).first()
+    user = User.query.filter_by(username=session['username']).first()
     if user and user.usertype == 'admin':
         return render_template('admin_profile.html', user=user)
     else:
-        flash('You do not have permission to view this page.', 'danger')
-        return redirect(url_for('index'))  # Redirect to index or appropriate page
-
-# Adjust your login route to redirect to admin_profile for admin users
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        identifier = request.form.get('username')
-        password = request.form.get('password')
-        remember = request.form.get('remember_me')
-
-        if not identifier or not password:
-            flash('Please fill out all fields', 'danger')
-            return redirect(url_for('login'))
-
-        if '@' in identifier:
-            user = User.query.filter_by(email=identifier).first()
-        else:
-            user = User.query.filter_by(username=identifier).first()
-
-        if not user:
-            flash('User does not exist', 'danger')
-            return redirect(url_for('login'))
-
-        if not check_password_hash(user.passhash, password):
-            flash('Incorrect password', 'danger')
-            return redirect(url_for('login'))
-
-        session['username'] = user.username
-        session['usertype'] = user.usertype
-        session['name'] = user.name
-        session['email'] = user.email
-
-        if user.usertype == 'admin':
-            return redirect(url_for('admin_profile'))  # Redirect to admin profile
-        else:
-            return redirect(url_for('influencer_profile', username=session['username']))
-
-    return render_template('login.html')
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('index'))
