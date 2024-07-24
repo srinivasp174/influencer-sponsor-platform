@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    {{ user.name }}'s Profile
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            <div class="profile-picture mb-3">
+                {% if user.profile_pic %}
+                    <img src="{{ url_for('static', filename='profile_pic/' + user.profile_pic) }}" alt="Profile Picture" class="img-fluid rounded-circle" width="250">
+                {% else %}
+                    <img src="{{ url_for('static', filename='default_profile_pic.jpeg') }}" alt="Profile Picture" class="img-fluid rounded-circle" width="250">
+                {% endif %}
+            </div>
+            <div class="profile-details">
+                <h2>{{ user.name }}</h2>
+                <div class="username text-muted">@{{ user.username }}</div>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="profile-actions mb-3">
+                {% if profile_type == 'influencer' %}
+                    <h3>Influencer Dashboard</h3>
+                    <a href="{{ url_for('view_campaigns') }}" class="btn btn-primary mb-2">View Campaigns</a>
+                {% elif profile_type == 'sponsor' %}
+                    <h3>Sponsor Dashboard</h3>
+                    <a href="{{ url_for('create_campaign') }}" class="btn btn-primary mb-2">Create a Campaign</a>
+                {% elif profile_type == 'admin' %}
+                    <h3>Admin Dashboard</h3>
+                    <a href="{{ url_for('view_campaigns') }}" class="btn btn-primary mb-2">View Campaigns</a>
+                    <a href="{{ url_for('view_reports') }}" class="btn btn-danger mb-2">View Reports</a>
+                {% else %}
+                    <p class="text-danger">Invalid profile type.</p>
+                {% endif %}
+            </div>
+
+            {% if current_user and current_user.username != user.username %}
+                <form action="{{ url_for('report_user', user_id=user.userid) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">Reason for reporting:</label>
+                        <textarea class="form-control" id="reason" name="reason" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning">Report User</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

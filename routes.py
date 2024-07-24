@@ -25,8 +25,11 @@ def inject_user():
     
 @app.context_processor
 def inject_current_user():
-    current_user = User.query.filter_by(username=session.get('username')).first()
+    current_user = None
+    if 'username' in session:
+        current_user = User.query.filter_by(username=session.get('username')).first()
     return dict(current_user=current_user)
+
 
 
 @app.route('/')
@@ -44,10 +47,7 @@ def login():
             flash('Please fill out all fields', 'danger')
             return redirect(url_for('login'))
 
-        if '@' in identifier:
-            user = User.query.filter_by(email=identifier).first()
-        else:
-            user = User.query.filter_by(username=identifier).first()
+        user = User.query.filter_by(email=identifier).first() if '@' in identifier else User.query.filter_by(username=identifier).first()
 
         if not user:
             flash('User does not exist', 'danger')
@@ -62,13 +62,14 @@ def login():
         session['name'] = user.name
         session['email'] = user.email
 
-        if user.usertype == 'admin':
-            return redirect(url_for('admin_profile'))  # Redirect to admin profile if user is admin
-        else:
-            return redirect(url_for('influencer_profile', username=session['username']))
+        # Determine profile type
+        profile_type = 'influencer' if user.usertype == 'influencer' else 'sponsor' if user.usertype == 'sponsor' else 'admin' if user.usertype == 'admin' else 'unknown'
+        
+        return redirect(url_for('user_profile', username=user.username))
 
     return render_template('login.html')
 
+    return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -81,7 +82,7 @@ def register():
         confirmpassword = request.form.get("confirmPassword")
         usertype = request.form.get('usertype')
 
-        if not username or not email or not password or not confirmpassword or not usertype or not firstname or not lastname:
+        if not all([username, email, password, confirmpassword, usertype, firstname, lastname]):
             flash('Please fill out all fields', 'danger')
             return redirect(url_for('register'))
 
@@ -93,14 +94,8 @@ def register():
             flash('Password must be at least 8 characters', 'danger')
             return redirect(url_for('register'))
 
-        user = User.query.filter_by(username=username).first()
-        if user:
-            flash('Username already exists', 'danger')
-            return redirect(url_for('register'))
-
-        mail = User.query.filter_by(email=email).first()
-        if mail:
-            flash('Email already exists', 'danger')
+        if User.query.filter((User.username == username) | (User.email == email)).first():
+            flash('Username or Email already exists', 'danger')
             return redirect(url_for('register'))
 
         name = f"{firstname} {lastname}"
@@ -111,11 +106,9 @@ def register():
         db.session.commit()
 
         if usertype == 'influencer':
-            influencer = Influencer(userid=new_user.userid)
-            db.session.add(influencer)
+            db.session.add(Influencer(userid=new_user.userid))
         elif usertype == 'sponsor':
-            sponsor = Sponsor(userid=new_user.userid)
-            db.session.add(sponsor)
+            db.session.add(Sponsor(userid=new_user.userid))
         db.session.commit()
 
         flash('User registered successfully', 'success')
@@ -132,29 +125,27 @@ def auth_required(func):
         return func(*args, **kwargs)
     return decorated_function
 
-
 @app.route('/logout')
 @auth_required
 def logout():
-    session.pop('username')
+    session.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('index'))
 
-
 @app.route('/<username>')
 @auth_required
-def influencer_profile(username):
+def user_profile(username):
     user = User.query.filter_by(username=username).first()
-    if user:
-        if user.usertype=='influencer':
-            return render_template('influencer_profile.html', user=user)
-        elif user.sponsors:
-            return render_template('sponsor_profile.html', user=user)
-        elif user.usertype=='admin':
-            return render_template('admin_profile.html', user=user)
-    flash('User not found', 'danger')
-    return redirect(url_for('register'))
+    if not user:
+        flash('User not found', 'danger')
+        return redirect(url_for('index'))
 
+    profile_type = user.usertype if user.usertype in ['influencer', 'sponsor', 'admin'] else None
+    if not profile_type:
+        flash('Unknown usertype', 'danger')
+        return redirect(url_for('index'))
+
+    return render_template('user_profile.html', user=user, profile_type=profile_type)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -188,10 +179,9 @@ def upload_profile_pic():
         flash('Profile picture uploaded successfully', 'success')
         return redirect(url_for('influencer_profile_edit', username=session['username']))
     
-    else:
-        flash('Invalid file type, only png, jpg, jpeg, and gif are allowed', 'danger')
-        return redirect(url_for('influencer_profile_edit', username=session['username']))
-    
+    flash('Invalid file type, only png, jpg, jpeg, and gif are allowed', 'danger')
+    return redirect(url_for('influencer_profile_edit', username=session['username']))
+
 @app.route('/settings/profile', methods=['GET', 'POST'])
 @auth_required
 def influencer_profile_edit():
@@ -227,6 +217,7 @@ def influencer_profile_edit():
         return redirect(url_for('influencer_profile_edit'))
 
     return render_template('influencer_profile_edit.html', user=user, influencer=influencer)    
+
 @app.route('/settings/account')
 @auth_required
 def influencer_account_edit():
@@ -266,7 +257,6 @@ def influencer_collabs_edit():
     else:
         flash('User not found.', 'danger')
         return redirect(url_for('login'))
-    
 
 @app.route('/campaign/create', methods=['GET', 'POST'])
 @auth_required
@@ -275,15 +265,16 @@ def create_campaign():
     if not user:
         flash('User not found.', 'danger')
         return redirect(url_for('login'))
+    
     sponsor = Sponsor.query.filter_by(userid=user.userid).first()
     if user.usertype == 'influencer':
         flash('You are not a Sponsor.', 'danger')
-        return redirect(url_for('influencer_profile', username=session['username']))
+        return redirect(url_for('user_profile', username=session['username']))
+    
     categories = Category.query.order_by(Category.category_name).all()
     if request.method == 'POST':
         name = request.form['name']
         description  = request.form['description']
-        picture = None
         budget = request.form['budget']
         duration = request.form['duration']
         selected_categories = request.form.getlist('category[]')
@@ -312,11 +303,10 @@ def view_campaigns():
     user = User.query.filter_by(username=session['username']).first()
     if user.usertype != 'influencer':
         flash('You are not an Influencer.', 'danger')
-        return redirect(url_for('dashboard'))  # Adjust this redirect as necessary
+        return redirect(url_for('index'))  # Adjust this redirect as necessary
 
     campaigns = Campaign.query.filter_by(campaign_status='Created').all()  # Show only 'Created' campaigns
     return render_template('view_campaigns.html', user=user, campaigns=campaigns)
-
 
 @app.route('/campaign/<int:campaign_id>/apply', methods=['POST'])
 @auth_required
@@ -324,7 +314,7 @@ def apply_campaign(campaign_id):
     user = User.query.filter_by(username=session['username']).first()
     if user.usertype != 'influencer':
         flash('You are not an Influencer.', 'danger')
-        return redirect(url_for('dashboard'))  # Adjust this redirect as necessary
+        return redirect(url_for('index'))  # Adjust this redirect as necessary
 
     influencer = Influencer.query.filter_by(userid=user.userid).first()
     campaign = Campaign.query.get_or_404(campaign_id)
@@ -352,7 +342,7 @@ def report_user(user_id):
     reason = request.form.get('reason')
     if not reason:
         flash('Reason for reporting is required.', 'danger')
-        return redirect(url_for('profile', user_id=user_id))  # Adjust this redirect as necessary
+        return redirect(url_for('user_profile', username=reported_user.username))  # Adjust this redirect as necessary
 
     report = Report(
         reported_by=user.username,
@@ -363,8 +353,7 @@ def report_user(user_id):
     db.session.commit()
     
     flash('Report submitted successfully.', 'success')
-    return redirect(url_for('influencer_profile', user_id=user_id))  # Adjust this redirect as necessary
-
+    return redirect(url_for('user_profile', username=reported_user.username))  # Adjust this redirect as necessary
 
 @app.route('/admin/reports')
 @auth_required
@@ -377,8 +366,7 @@ def view_reports():
         flash('You do not have permission to view this page.', 'danger')
         return redirect(url_for('index'))
     reports = Report.query.all()
-    return render_template('admin_reports.html', reports=reports)
-
+    return render_template('admin_reports.html', user=user, reports=reports)
 
 @app.route('/admin/report/<int:report_id>/resolve', methods=['POST'])
 @auth_required
@@ -395,13 +383,3 @@ def resolve_report(report_id):
     db.session.commit()
     flash('Report resolved successfully.', 'success')
     return redirect(url_for('view_reports'))
-
-@app.route('/admin_profile')
-@auth_required
-def admin_profile():
-    user = User.query.filter_by(username=session['username']).first()
-    if user and user.usertype == 'admin':
-        return render_template('admin_profile.html', user=user)
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('index'))
