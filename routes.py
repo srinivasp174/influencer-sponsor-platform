@@ -1,11 +1,13 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from app import app
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from models import db, User, Influencer, Sponsor, Campaign, Category, SocialMedia, influencer_category, Report
 from functools import wraps
+from sqlalchemy import func
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 @app.context_processor
 def inject_is_index():
@@ -30,6 +32,10 @@ def inject_current_user():
         current_user = User.query.filter_by(username=session.get('username')).first()
     return dict(current_user=current_user)
 
+def get_current_user():
+    if 'username' in session:
+        return User.query.filter_by(username=session.get('username')).first()
+    return None
 
 
 @app.route('/')
@@ -301,11 +307,8 @@ def create_campaign():
 @auth_required
 def view_campaigns():
     user = User.query.filter_by(username=session['username']).first()
-    if user.usertype != 'influencer':
-        flash('You are not an Influencer.', 'danger')
-        return redirect(url_for('index'))  # Adjust this redirect as necessary
 
-    campaigns = Campaign.query.filter_by(campaign_status='Created').all()  # Show only 'Created' campaigns
+    campaigns = Campaign.query.filter_by(campaign_status='Created').all() 
     return render_template('view_campaigns.html', user=user, campaigns=campaigns)
 
 @app.route('/campaign/<int:campaign_id>/apply', methods=['POST'])
@@ -337,12 +340,12 @@ def report_user(user_id):
     
     if not user:
         flash('User not found.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
     
     reason = request.form.get('reason')
     if not reason:
         flash('Reason for reporting is required.', 'danger')
-        return redirect(url_for('user_profile', username=reported_user.username))  # Adjust this redirect as necessary
+        return redirect(url_for('user_profile', username=reported_user.username))
 
     report = Report(
         reported_by=user.username,
@@ -353,8 +356,7 @@ def report_user(user_id):
     db.session.commit()
     
     flash('Report submitted successfully.', 'success')
-    return redirect(url_for('user_profile', username=reported_user.username))  # Adjust this redirect as necessary
-
+    return redirect(url_for('user_profile', username=reported_user.username))
 @app.route('/admin/reports')
 @auth_required
 def view_reports():
@@ -364,7 +366,7 @@ def view_reports():
         return redirect(url_for('index'))
     if user.usertype != 'admin':
         flash('You do not have permission to view this page.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
     reports = Report.query.all()
     return render_template('admin_reports.html', user=user, reports=reports)
 
@@ -383,3 +385,85 @@ def resolve_report(report_id):
     db.session.commit()
     flash('Report resolved successfully.', 'success')
     return redirect(url_for('view_reports'))
+
+@app.route('/chart_data/registrations')
+def chart_data_registrations():
+    registrations = db.session.query(
+        func.date(User.created_at),
+        func.count(User.userid)
+    ).group_by(func.date(User.created_at)).all()
+    
+    data = {
+        'labels': [str(r[0]) for r in registrations],
+        'values': [r[1] for r in registrations]
+    }
+    return jsonify(data)
+
+@app.route('/chart_data/user_types')
+def chart_data_user_types():
+    user_types = db.session.query(
+        User.usertype,
+        func.count(User.userid)
+    ).group_by(User.usertype).all()
+    
+    data = {
+        'labels': [u[0] for u in user_types],
+        'values': [u[1] for u in user_types]
+    }
+    return jsonify(data)
+
+@app.route('/chart_data/campaigns')
+def chart_data_campaigns():
+    from sqlalchemy import func
+    campaigns = db.session.query(
+        func.date(Campaign.created_at),
+        func.count(Campaign.campaignid)
+    ).group_by(func.date(Campaign.created_at)).all()
+    
+    data = {
+        'labels': [str(c[0]) for c in campaigns],
+        'values': [c[1] for c in campaigns]
+    }
+    return jsonify(data)
+
+@app.route('/chart_data/applications')
+def chart_data_applications():
+    from sqlalchemy import func
+    applications = db.session.query(
+        Campaign.campaign_name,
+        func.count(Influencer.userid)
+    ).join(Campaign.influencers).group_by(Campaign.campaign_name).all()
+    
+    data = {
+        'labels': [a[0] for a in applications],
+        'values': [a[1] for a in applications]
+    }
+    return jsonify(data)
+
+@app.route('/chart_data/reports')
+def chart_data_reports():
+    from sqlalchemy import func
+    reports = db.session.query(
+        func.date(Report.created_at),
+        func.count(Report.reportid)
+    ).group_by(func.date(Report.created_at)).all()
+    
+    data = {
+        'labels': [str(r[0]) for r in reports],
+        'values': [r[1] for r in reports]
+    }
+    return jsonify(data)
+
+@app.route('/charts')
+def charts():
+
+    user = current_user
+    return render_template('charts.html', user=user)
+
+@app.route('/privacy_policy')
+def privacy_policy():
+    return render_template('privacy_policy.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')

@@ -64,7 +64,7 @@ def create_admin():
             username = 'admin'
             password = 'adminpassword'
             passhash = generate_password_hash(password)
-            profile_pic = 'static/pikaso_texttoimage_a-minimalistic-logo-for-an-influencer-sponsor-plat.jpeg'  # Manually constructing the URL
+            profile_pic = 'static/logo.jpeg'
             new_admin = User(
                 username=username,
                 passhash=passhash,
@@ -78,6 +78,7 @@ def create_admin():
             print("Admin user created successfully")
         else:
             print("Admin user already exists")
+
 
 if __name__ == '__main__':
     create_category_table()

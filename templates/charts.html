@@ -1,0 +1,85 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Charts
+{% endblock %}
+
+{% block content %}
+<div>
+    <h2>User Registrations Over Time</h2>
+    <canvas id="registrationsChart"></canvas>
+</div>
+<div>
+    <h2>Influencers vs Sponsors</h2>
+    <canvas id="userTypesChart"></canvas>
+</div>
+<div>
+    <h2>Campaigns Created Over Time</h2>
+    <canvas id="campaignsChart"></canvas>
+</div>
+<div>
+    <h2>Campaign Applications</h2>
+    <canvas id="applicationsChart"></canvas>
+</div>
+<div>
+    <h2>Reports Submitted Over Time</h2>
+    <canvas id="reportsChart"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  async function fetchData(endpoint) {
+    const response = await fetch(endpoint);
+    return await response.json();
+  }
+
+  async function renderChart(endpoint, chartId, type, label, colors) {
+    const data = await fetchData(endpoint);
+    const ctx = document.getElementById(chartId);
+    new Chart(ctx, {
+      type: type,
+      data: {
+        labels: data.labels,
+        datasets: [{
+          label: label,
+          data: data.values,
+          borderWidth: 1,
+          borderColor: colors.borderColor,
+          backgroundColor: colors.backgroundColor
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
+  renderChart('/chart_data/registrations', 'registrationsChart', 'line', 'User Registrations Over Time', {
+    borderColor: 'rgba(75, 192, 192, 1)',
+    backgroundColor: 'rgba(75, 192, 192, 0.2)'
+  });
+
+  renderChart('/chart_data/user_types', 'userTypesChart', 'pie', 'Influencers vs Sponsors', {
+    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
+    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)']
+  });
+
+  renderChart('/chart_data/campaigns', 'campaignsChart', 'line', 'Campaigns Created Over Time', {
+    borderColor: 'rgba(75, 192, 192, 1)',
+    backgroundColor: 'rgba(75, 192, 192, 0.2)'
+  });
+
+  renderChart('/chart_data/applications', 'applicationsChart', 'bar', 'Campaign Applications', {
+    borderColor: 'rgba(153, 102, 255, 1)',
+    backgroundColor: 'rgba(153, 102, 255, 0.2)'
+  });
+
+  renderChart('/chart_data/reports', 'reportsChart', 'line', 'Reports Submitted Over Time', {
+    borderColor: 'rgba(255, 159, 64, 1)',
+    backgroundColor: 'rgba(255, 159, 64, 0.2)'
+  });
+</script>
+{% endblock %}

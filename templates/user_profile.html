@@ -7,8 +7,9 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row">
+        <!-- Profile Picture and Details -->
         <div class="col-md-4 text-center">
-            <div class="profile-picture mb-3">
+            <div class="profile-picture mb-4">
                 {% if user.profile_pic %}
                     <img src="{{ url_for('static', filename='profile_pic/' + user.profile_pic) }}" alt="Profile Picture" class="img-fluid rounded-circle" width="250">
                 {% else %}
@@ -19,34 +20,73 @@
                 <h2>{{ user.name }}</h2>
                 <div class="username text-muted">@{{ user.username }}</div>
                 <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Joined:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
+                {% if user.bio %}
+                    <p><strong>Bio:</strong> {{ user.bio }}</p>
+                {% endif %}
+                <a href="{{ url_for('charts') }}" class="btn btn-outline-primary mt-3">View Charts</a>
+                {% if user_type == 'influencer' %}
+                    <div class="mt-4">
+                        <h5>Metrics</h5>
+                        <p><strong>Campaigns:</strong> {{ user.campaigns_count }}</p>
+                        <p><strong>Followers:</strong> {{ user.followers_count }}</p>
+                    </div>
+                {% endif %}
             </div>
+            <!-- Social Media Links -->
+            {% if user.social_media %}
+                <div class="mt-4">
+                    <h5>Social Media</h5>
+                    <ul class="list-unstyled">
+                        {% for social in user.social_media %}
+                            <li>
+                                <a href="{{ social.social_media_link }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                    <i class="fab fa-{{ social.social_media_name|lower() }}"></i> {{ social.social_media_name }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
         </div>
 
+        <!-- Dashboard Actions -->
         <div class="col-md-8">
-            <div class="profile-actions mb-3">
+            <div class="profile-actions mb-4">
                 {% if profile_type == 'influencer' %}
                     <h3>Influencer Dashboard</h3>
                     <a href="{{ url_for('view_campaigns') }}" class="btn btn-primary mb-2">View Campaigns</a>
+                    {% if current_user.username == user.username %}
+                        <a href="{{ url_for('influencer_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
+                    {% endif %}
                 {% elif profile_type == 'sponsor' %}
                     <h3>Sponsor Dashboard</h3>
                     <a href="{{ url_for('create_campaign') }}" class="btn btn-primary mb-2">Create a Campaign</a>
-                {% elif profile_type == 'admin' %}
+                    {% if current_user.username == user.username %}
+                        <a href="{{ url_for('influencer_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
+                    {% endif %}
+                {% elif profile_type == 'admin' and current_user.username == user.username %}
                     <h3>Admin Dashboard</h3>
                     <a href="{{ url_for('view_campaigns') }}" class="btn btn-primary mb-2">View Campaigns</a>
                     <a href="{{ url_for('view_reports') }}" class="btn btn-danger mb-2">View Reports</a>
-                {% else %}
-                    <p class="text-danger">Invalid profile type.</p>
+                    {% if current_user.username == user.username %}
+                        <a href="{{ url_for('influencer_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
+                    {% endif %}
                 {% endif %}
             </div>
 
-            {% if current_user and current_user.username != user.username %}
-                <form action="{{ url_for('report_user', user_id=user.userid) }}" method="POST">
-                    <div class="mb-3">
-                        <label for="reason" class="form-label">Reason for reporting:</label>
-                        <textarea class="form-control" id="reason" name="reason" required></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-warning">Report User</button>
-                </form>
+            <!-- Report User Form -->
+            {% if current_user and current_user.username != user.username and profile_type != 'admin' %}
+                <div class="report-user mt-4">
+                    <h4>Report User</h4>
+                    <form action="{{ url_for('report_user', user_id=user.userid) }}" method="POST">
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason for reporting:</label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-warning">Submit Report</button>
+                    </form>
+                </div>
             {% endif %}
         </div>
     </div>

@@ -2,7 +2,181 @@
 
 {% block content %}
 
+<style>
+    .carousel-item img {
+        width: 100%;
+        height: 100vh;
+        object-fit: cover;
+    }
+    .carousel-inner {
+        height: 100vh;
+    }
+    .carousel-caption {
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+    .carousel-indicators button {
+        background-color: #fff;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004080;
+    }
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: scale(1.05);
+    }
+    .testimonial-carousel .carousel-item {
+        transition: opacity 1s;
+    }
+    .testimonial-carousel .carousel-item-next,
+    .testimonial-carousel .carousel-item-prev,
+    .testimonial-carousel .carousel-item.active {
+        opacity: 1;
+    }
+    .testimonial-carousel .carousel-item-next,
+    .testimonial-carousel .carousel-item-prev {
+        opacity: 0;
+    }
+    .footer-social-icons a {
+        color: #fff;
+        margin: 0 10px;
+        text-decoration: none;
+    }
+    .footer-social-icons a:hover {
+        color: #007bff;
+    }
+</style>
+
 <div class="content">
-    this is the content of index
+    <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" data-bs-interval="500">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="3" aria-label="Slide 4"></button>
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="4" aria-label="Slide 5"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="{{ url_for('static', filename='cover1.png') }}" class="d-block w-100" alt="cover1">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
+                    <h5>Welcome to Our Platform</h5>
+                    <p>Connecting influencers and sponsors for seamless collaborations and impactful campaigns.</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='cover2.jpg') }}" class="d-block w-100" alt="cover2">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
+                    <h5>Find the Perfect Match</h5>
+                    <p>Explore a diverse range of influencers to find the best fit for your brand's needs.</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='cover3.jpg') }}" class="d-block w-100" alt="cover3">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
+                    <h5>Boost Your Campaigns</h5>
+                    <p>Leverage our platform to create impactful campaigns that resonate with your target audience.</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='cover4.jpg') }}" class="d-block w-100" alt="cover4">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
+                    <h5>Grow Your Influence</h5>
+                    <p>Influencers, expand your reach and connect with top brands to grow your influence.</p>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <img src="{{ url_for('static', filename='cover5.png') }}" class="d-block w-100" alt="cover5">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
+                    <h5>Join Our Community</h5>
+                    <p>Become a part of our vibrant community of influencers and sponsors. Sign up today!</p>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
 </div>
+
+
+<div class="container mt-5 text-center">
+    <h2>Ready to Get Started?</h2>
+    <p>Join our community and start connecting with influencers and sponsors today.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up Now</a>
+</div>
+
+<div class="container mt-5">
+    <h2 class="text-center">What Our Users Say</h2>
+    <div id="testimonialCarousel" class="carousel slide testimonial-carousel" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">"This platform has transformed our marketing strategy. Highly recommended!"</p>
+                        <h5 class="card-title">Jane Doe</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Influencer</h6>
+                    </div>
+                </div>
+            </div>
+            <!-- Add more testimonials -->
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+<footer class="bg-dark text-white text-center py-4">
+    <div class="container">
+        <div class="row">
+            <!-- About Us Section -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <h5>About Us</h5>
+                <p>We are dedicated to bridging the gap between influencers and sponsors. Our platform offers seamless collaboration and impactful marketing opportunities.</p>
+            </div>
+            
+            <!-- Quick Links Section -->
+            <div class="col-lg-4 col-md-6 mb-3">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('privacy_policy') }}" class="text-white">Privacy Policy</a></li>
+                    <li><a href="{{ url_for('terms') }}" class="text-white">Terms of Service</a></li>
+                    
+                </ul>
+            </div>
+            
+            <!-- Contact Us Section -->
+            <div class="col-lg-4 col-md-12 mb-3">
+                <h5>Contact Us</h5>
+                <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:contact@example.com" class="text-white">contact@example.com</a></p>
+                <p>Follow us on social media:</p>
+                <div class="footer-social-icons">
+                    <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="bi bi-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Bottom -->
+        <div class="mt-4">
+            <p class="mb-0">&copy; 2024 Your Company. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+
 {% endblock %}
