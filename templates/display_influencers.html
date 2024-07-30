@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Influencers
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Influencers</h1>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for influencer in influencers %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ url_for('static', filename='profile_pic/' + influencer.profile_pic) }}" class="card-img-top" alt="{{ influencer.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ influencer.name }}</h5>
+                    <p class="card-text">Username: {{ influencer.username }}</p>
+                    <p class="card-text">Email: {{ influencer.email }}</p>
+                    <a href="{{ url_for('user_profile', username=influencer.username) }}" class="btn btn-primary">View Profile</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

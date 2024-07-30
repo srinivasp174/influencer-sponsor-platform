@@ -1,0 +1,133 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<style>
+    .about-section {
+        background-color: #f8f9fa;
+        padding: 60px 0;
+    }
+    .about-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+    }
+    .about-section p {
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    .team-section {
+        background-color: #ffffff;
+        padding: 60px 0;
+    }
+    .team-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+    }
+    .team-section .card {
+        margin-bottom: 30px;
+    }
+    .team-section .card img {
+        height: 300px;
+        object-fit: cover;
+    }
+    .team-section .card-body h5 {
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+    }
+    .team-section .card-body p {
+        font-size: 1rem;
+    }
+    .values-section {
+        background-color: #f8f9fa;
+        padding: 60px 0;
+    }
+    .values-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 30px;
+    }
+    .values-section .card {
+        margin-bottom: 30px;
+    }
+    .values-section .card-body h5 {
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+    }
+    .values-section .card-body p {
+        font-size: 1rem;
+    }
+</style>
+
+<div class="about-section text-center">
+    <div class="container">
+        <h2>About Us</h2>
+        <p>Our mission is to bridge the gap between influencers and sponsors, creating seamless collaborations that lead to impactful marketing campaigns. We believe in the power of influence and the potential for brands to connect with their audiences through authentic, engaging content.</p>
+        <p>Founded in 2023, we have quickly grown into a vibrant community of influencers and sponsors. Our platform is designed to facilitate meaningful connections and provide the tools needed for successful partnerships.</p>
+    </div>
+</div>
+
+
+<div class="values-section text-center">
+    <div class="container">
+        <h2>Our Values</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Integrity</h5>
+                        <p class="card-text">We believe in honest and transparent relationships. Our platform is built on trust and mutual respect.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Innovation</h5>
+                        <p class="card-text">We are committed to constantly improving and evolving our platform to meet the needs of our users.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Community</h5>
+                        <p class="card-text">Our community is at the heart of everything we do. We strive to create a supportive and engaging environment for all our users.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-dark text-white text-center py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <h5>About Us</h5>
+                <p>We are dedicated to bridging the gap between influencers and sponsors. Our platform offers seamless collaboration and impactful marketing opportunities.</p>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('privacy_policy') }}" class="text-white">Privacy Policy</a></li>
+                    <li><a href="{{ url_for('terms') }}" class="text-white">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-4 col-md-12 mb-3">
+                <h5>Contact Us</h5>
+                <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:contact@example.com" class="text-white">contact@example.com</a></p>
+                <p>Follow us on social media:</p>
+                <div class="footer-social-icons">
+                    <a href="https://facebook.com" aria-label="Facebook" class="text-white"><i class="bi bi-facebook"></i></a>
+                    <a href="https://x.com" aria-label="Twitter" class="text-white"><i class="bi bi-twitter"></i></a>
+                    <a href="https://instagram.com" aria-label="Instagram" class="text-white"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <p class="mb-0">&copy; 2024 CollabSphere. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+
+{% endblock %}

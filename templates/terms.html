@@ -1,1 +1,95 @@
 {% extends 'layout.html' %}
+
+{% block title %}
+    Terms of Service - CollabSphere
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Terms of Service</h1>
+    <p>Effective Date: January 1, 2024</p>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing and using the CollabSphere platform, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.</p>
+
+    <h2>2. Changes to Terms</h2>
+    <p>CollabSphere reserves the right to revise these terms at any time without notice. By using this platform, you agree to be bound by the current version of these Terms of Service.</p>
+
+    <h2>3. Use License</h2>
+    <p>Permission is granted to temporarily download one copy of the materials on CollabSphere's website for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license, you may not:</p>
+    <ul>
+        <li>Modify or copy the materials;</li>
+        <li>Use the materials for any commercial purpose, or for any public display (commercial or non-commercial);</li>
+        <li>Attempt to decompile or reverse engineer any software contained on CollabSphere's website;</li>
+        <li>Remove any copyright or other proprietary notations from the materials; or</li>
+        <li>Transfer the materials to another person or "mirror" the materials on any other server.</li>
+    </ul>
+    <p>This license shall automatically terminate if you violate any of these restrictions and may be terminated by CollabSphere at any time. Upon terminating your viewing of these materials or upon the termination of this license, you must destroy any downloaded materials in your possession whether in electronic or printed format.</p>
+
+    <h2>4. Account Responsibility</h2>
+    <p>You are responsible for maintaining the confidentiality of your account and password and for restricting access to your computer. You agree to accept responsibility for all activities that occur under your account or password.</p>
+
+    <h2>5. User Content</h2>
+    <p>You retain ownership of all content you submit, post, display, or otherwise make available on the platform. By submitting, posting, or displaying content, you grant CollabSphere a worldwide, non-exclusive, royalty-free license to use, reproduce, adapt, publish, translate, create derivative works from, distribute, perform, and display such content in any media or distribution methods now known or later developed.</p>
+
+    <h2>6. Prohibited Conduct</h2>
+    <p>You agree not to use the platform to:</p>
+    <ul>
+        <li>Violate any local, state, national, or international law;</li>
+        <li>Stalk, harass, or harm another individual;</li>
+        <li>Impersonate any person or entity, or otherwise misrepresent your affiliation with a person or entity;</li>
+        <li>Engage in any activity that interferes with or disrupts the platform;</li>
+        <li>Upload or distribute viruses or any other technologies that may harm the platform or the interests or property of users;</li>
+        <li>Post any content that is illegal, offensive, or inappropriate.</li>
+    </ul>
+
+    <h2>7. Disclaimer of Warranties</h2>
+    <p>The materials on CollabSphere's website are provided "as is". CollabSphere makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</p>
+
+    <h2>8. Limitation of Liability</h2>
+    <p>In no event shall CollabSphere or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on CollabSphere's website, even if CollabSphere or a CollabSphere authorized representative has been notified orally or in writing of the possibility of such damage.</p>
+
+    <h2>9. Indemnification</h2>
+    <p>You agree to indemnify and hold harmless CollabSphere, its affiliates, and their respective officers, agents, partners, and employees from and against any losses, liabilities, claims, demands, damages, costs, and expenses, including reasonable attorneys' fees, arising out of or related to your use of the platform, your violation of these Terms of Service, or your violation of any rights of another.</p>
+
+    <h2>10. Governing Law</h2>
+    <p>These terms and conditions are governed by and construed in accordance with the laws of the jurisdiction in which CollabSphere operates and you irrevocably submit to the exclusive jurisdiction of the courts in that State or location.</p>
+
+    <h2>11. Contact Information</h2>
+    <p>If you have any questions about these Terms of Service, please contact us at:</p>
+    <p>Email: <a href="mailto:tos@collabsphere.com">tos@collabsphere.com</a></p>
+    <p>Address: 1234 Influence St, Marketing City, MC 56789</p>
+</div>
+
+<footer class="bg-dark text-white text-center py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <h5>About Us</h5>
+                <p>We are dedicated to bridging the gap between influencers and sponsors. Our platform offers seamless collaboration and impactful marketing opportunities.</p>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-3">
+                <h5>Quick Links</h5>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('privacy_policy') }}" class="text-white">Privacy Policy</a></li>
+                    <li><a href="{{ url_for('terms') }}" class="text-white">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-4 col-md-12 mb-3">
+                <h5>Contact Us</h5>
+                <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:contact@example.com" class="text-white">contact@example.com</a></p>
+                <p>Follow us on social media:</p>
+                <div class="footer-social-icons">
+                    <a href="https://facebook.com" aria-label="Facebook" class="text-white"><i class="bi bi-facebook"></i></a>
+                    <a href="https://x.com" aria-label="Twitter" class="text-white"><i class="bi bi-twitter"></i></a>
+                    <a href="https://instagram.com" aria-label="Instagram" class="text-white"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <p class="mb-0">&copy; 2024 CollabSphere. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+{% endblock %}

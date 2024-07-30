@@ -5,81 +5,179 @@
 {% endblock %}
 
 {% block content %}
-<div>
-    <h2>User Registrations Over Time</h2>
-    <canvas id="registrationsChart"></canvas>
+<div class="container mt-5" id="chartsContainer" data-usertype="{{ current_user.usertype }}">
+    <h1 class="mb-4 text-center">Analytics</h1>
+
+    <!-- Admin Charts -->
+    <div class="row admin-charts" style="display: none;">
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">User Registrations Over Time</h2>
+                    <canvas id="registrationsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Influencers vs Sponsors</h2>
+                    <canvas id="userTypesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row admin-charts" style="display: none;">
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Campaigns Created Over Time</h2>
+                    <canvas id="campaignsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <div class="row admin-charts" style="display: none;">
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Reports Submitted Over Time</h2>
+                    <canvas id="reportsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+      
+    </div>
+
+    <!-- Influencer and Sponsor Charts -->
+    <div class="row influencer-charts sponsor-charts" style="display: none;">
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Your Campaign Performance</h2>
+                    <canvas id="userCampaignPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Your Engagement Metrics</h2>
+                    <canvas id="userEngagementMetricsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Your Revenue Generated</h2>
+                    <canvas id="userRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <h2>Influencers vs Sponsors</h2>
-    <canvas id="userTypesChart"></canvas>
-</div>
-<div>
-    <h2>Campaigns Created Over Time</h2>
-    <canvas id="campaignsChart"></canvas>
-</div>
-<div>
-    <h2>Campaign Applications</h2>
-    <canvas id="applicationsChart"></canvas>
-</div>
-<div>
-    <h2>Reports Submitted Over Time</h2>
-    <canvas id="reportsChart"></canvas>
-</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
   async function fetchData(endpoint) {
     const response = await fetch(endpoint);
-    return await response.json();
+    const data = await response.json();
+    console.log(`Data fetched from ${endpoint}:`, data); // Debugging: log fetched data
+    return data;
   }
 
   async function renderChart(endpoint, chartId, type, label, colors) {
     const data = await fetchData(endpoint);
     const ctx = document.getElementById(chartId);
-    new Chart(ctx, {
-      type: type,
-      data: {
-        labels: data.labels,
-        datasets: [{
-          label: label,
-          data: data.values,
-          borderWidth: 1,
-          borderColor: colors.borderColor,
-          backgroundColor: colors.backgroundColor
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
+    if (ctx) { // Debugging: check if canvas element exists
+      console.log(`Rendering chart on canvas with id ${chartId}`);
+      new Chart(ctx, {
+        type: type,
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: label,
+            data: data.values,
+            borderWidth: 1,
+            borderColor: colors.borderColor,
+            backgroundColor: colors.backgroundColor
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
           }
         }
-      }
-    });
+      });
+    } else {
+      console.error(`Canvas element with id ${chartId} not found`);
+    }
   }
 
-  renderChart('/chart_data/registrations', 'registrationsChart', 'line', 'User Registrations Over Time', {
-    borderColor: 'rgba(75, 192, 192, 1)',
-    backgroundColor: 'rgba(75, 192, 192, 0.2)'
-  });
+  document.addEventListener('DOMContentLoaded', function () {
+    const userType = document.getElementById('chartsContainer').dataset.usertype;
+    console.log(`User type: ${userType}`); // Debugging: log user type
 
-  renderChart('/chart_data/user_types', 'userTypesChart', 'pie', 'Influencers vs Sponsors', {
-    borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
-    backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)']
-  });
+    if (userType === 'admin') {
+      document.querySelectorAll('.admin-charts').forEach(el => el.style.display = 'block');
 
-  renderChart('/chart_data/campaigns', 'campaignsChart', 'line', 'Campaigns Created Over Time', {
-    borderColor: 'rgba(75, 192, 192, 1)',
-    backgroundColor: 'rgba(75, 192, 192, 0.2)'
-  });
+      renderChart('/chart_data/registrations', 'registrationsChart', 'line', 'User Registrations Over Time', {
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)'
+      });
 
-  renderChart('/chart_data/applications', 'applicationsChart', 'bar', 'Campaign Applications', {
-    borderColor: 'rgba(153, 102, 255, 1)',
-    backgroundColor: 'rgba(153, 102, 255, 0.2)'
-  });
+      renderChart('/chart_data/user_types', 'userTypesChart', 'pie', 'Influencers vs Sponsors', {
+        borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
+        backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)']
+      });
 
-  renderChart('/chart_data/reports', 'reportsChart', 'line', 'Reports Submitted Over Time', {
-    borderColor: 'rgba(255, 159, 64, 1)',
-    backgroundColor: 'rgba(255, 159, 64, 0.2)'
+      renderChart('/chart_data/campaigns', 'campaignsChart', 'line', 'Campaigns Created Over Time', {
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)'
+      });
+
+      renderChart('/chart_data/applications', 'applicationsChart', 'bar', 'Campaign Applications', {
+        borderColor: 'rgba(153, 102, 255, 1)',
+        backgroundColor: 'rgba(153, 102, 255, 0.2)'
+      });
+
+      renderChart('/chart_data/reports', 'reportsChart', 'line', 'Reports Submitted Over Time', {
+        borderColor: 'rgba(255, 159, 64, 1)',
+        backgroundColor: 'rgba(255, 159, 64, 0.2)'
+      });
+
+      renderChart('/chart_data/all_users_performance', 'allUsersPerformanceChart', 'bar', 'All Users Performance', {
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)'
+      });
+    }
+
+    if (['influencer', 'sponsor'].includes(userType)) {
+      document.querySelectorAll('.influencer-charts, .sponsor-charts').forEach(el => el.style.display = 'block');
+
+      renderChart('/chart_data/user_campaign_performance', 'userCampaignPerformanceChart', 'line', 'Your Campaign Performance', {
+        borderColor: 'rgba(255, 206, 86, 1)',
+        backgroundColor: 'rgba(255, 206, 86, 0.2)'
+      });
+
+      renderChart('/chart_data/user_engagement_metrics', 'userEngagementMetricsChart', 'bar', 'Your Engagement Metrics', {
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)'
+      });
+
+      renderChart('/chart_data/revenue', 'userRevenueChart', 'line', 'Your Revenue Generated', {
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)'
+      });
+    }
   });
 </script>
 {% endblock %}

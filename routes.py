@@ -1,13 +1,14 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify,  abort, send_from_directory
 from app import app
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from datetime import datetime
-from models import db, User, Influencer, Sponsor, Campaign, Category, SocialMedia, influencer_category, Report
+from datetime import datetime, timedelta
+from models import db, User, Influencer, Sponsor, Campaign, Category, influencer_category, Report, InfluencerRequest
 from functools import wraps
 from sqlalchemy import func
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from random import shuffle
+
 
 @app.context_processor
 def inject_is_index():
@@ -15,6 +16,10 @@ def inject_is_index():
         'is_index': request.path == '/',
         'is_login': request.path == '/login',
         'is_register': request.path == '/register',
+        'is_about' : request.path == '/about',
+        'is_pricing' : request.path == '/pricing',
+        'is_privacy_policy' : request.path == '/privacy_policy',
+        'is_terms' : request.path == '/terms',
         'is_influencer': '/influencer_profile' in request.path
     }
 
@@ -151,7 +156,17 @@ def user_profile(username):
         flash('Unknown usertype', 'danger')
         return redirect(url_for('index'))
 
-    return render_template('user_profile.html', user=user, profile_type=profile_type)
+    current_user = get_current_user()  
+
+    campaigns = []
+    requests = []
+    if profile_type == 'influencer' and user.username == current_user.username:
+        campaigns = Campaign.query.filter_by(influencer_userid=user.userid).all()
+        requests = InfluencerRequest.query.filter_by(influencer_id=user.userid).all()
+    elif profile_type == 'sponsor' and user.username == current_user.username:
+        campaigns = Campaign.query.filter_by(sponsor_userid=user.userid).all()
+
+    return render_template('user_profile.html', user=user, profile_type=profile_type, campaigns=campaigns, requests=requests)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -161,12 +176,12 @@ def allowed_file(filename):
 def upload_profile_pic():
     if 'profile_pic' not in request.files:
         flash('No profile picture uploaded', 'danger')
-        return redirect(url_for('influencer_profile_edit'))
+        return redirect(url_for('user_profile_edit'))
 
     file = request.files['profile_pic']
     if file.filename == '':
         flash('No selected file', 'danger')
-        return redirect(url_for('influencer_profile_edit'))
+        return redirect(url_for('user_profile_edit'))
 
     if file and allowed_file(file.filename):
         original_filename = secure_filename(file.filename)
@@ -183,14 +198,14 @@ def upload_profile_pic():
         db.session.commit()
         
         flash('Profile picture uploaded successfully', 'success')
-        return redirect(url_for('influencer_profile_edit', username=session['username']))
+        return redirect(url_for('user_profile_edit', username=session['username']))
     
     flash('Invalid file type, only png, jpg, jpeg, and gif are allowed', 'danger')
-    return redirect(url_for('influencer_profile_edit', username=session['username']))
+    return redirect(url_for('user_profile_edit', username=session['username']))
 
-@app.route('/settings/profile', methods=['GET', 'POST'])
+@app.route('/edit_profile', methods=['GET', 'POST'])
 @auth_required
-def influencer_profile_edit():
+def user_profile_edit():
     user = User.query.filter_by(username=session['username']).first()
     if not user:
         flash('User not found.', 'danger')
@@ -202,67 +217,43 @@ def influencer_profile_edit():
         try:
             firstname = request.form.get('firstname')
             lastname = request.form.get('lastname')
+            username = request.form.get('username')
             email = request.form.get('email')
             bio = request.form.get('bio')
             location = request.form.get('location')
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            user.twitter = request.form.get('twitter')
+            user.facebook = request.form.get('facebook')
+            user.instagram = request.form.get('instagram')
+            user.linkedin = request.form.get('linkedin')
 
             if firstname and lastname:
                 user.name = f"{firstname} {lastname}"
+            if username:
+                user.username = username
+                session['username'] = username
             if email:
                 user.email = email
             if bio and influencer:
                 influencer.bio = bio
             if location and influencer:
                 influencer.location = location
+            if password and confirm_password:
+                if password == confirm_password:
+                    user.passhash = generate_password_hash(password)
+                else:
+                    flash('Passwords do not match', 'danger')
+                    return redirect(url_for('user_profile_edit'))
 
             db.session.commit()
             flash('Profile updated successfully', 'success')
         except Exception as e:
             db.session.rollback()
-            flash('An error occurred while updating the profile.', 'danger')
-        return redirect(url_for('influencer_profile_edit'))
+            flash(f'An error occurred while updating the profile: {str(e)}', 'danger')
+        return redirect(url_for('user_profile_edit'))
 
-    return render_template('influencer_profile_edit.html', user=user, influencer=influencer)    
-
-@app.route('/settings/account')
-@auth_required
-def influencer_account_edit():
-    user = User.query.filter_by(username=session['username']).first()
-    if user:
-        return render_template('influencer_account_edit.html', user=user)
-    else:
-        flash('User not found.', 'danger')
-        return redirect(url_for('login'))
-    
-@app.route('/settings/appearance')
-@auth_required
-def influencer_appearance_edit():
-    user = User.query.filter_by(username=session['username']).first()
-    if user:
-        return render_template('influencer_appearance_edit.html', user=user)
-    else:
-        flash('User not found.', 'danger')
-        return redirect(url_for('login'))
-    
-@app.route('/settings/security')
-@auth_required
-def influencer_security_edit():
-    user = User.query.filter_by(username=session['username']).first()
-    if user:
-        return render_template('influencer_security_edit.html', user=user)
-    else:
-        flash('User not found.', 'danger')
-        return redirect(url_for('login'))
-    
-@app.route('/settings/collaborations')
-@auth_required
-def influencer_collabs_edit():
-    user = User.query.filter_by(username=session['username']).first()
-    if user:
-        return render_template('influencer_collabs_edit.html', user=user)
-    else:
-        flash('User not found.', 'danger')
-        return redirect(url_for('login'))
+    return render_template('user_profile_edit.html', user=user, influencer=influencer)
 
 @app.route('/campaign/create', methods=['GET', 'POST'])
 @auth_required
@@ -303,13 +294,29 @@ def create_campaign():
         flash('Campaign created successfully', 'success')
     return render_template('create_campaign.html', user=user, sponsor=sponsor, categories=categories)
 
-@app.route('/campaign', methods=['GET'])
+@app.route('/view_campaigns', methods=['GET'])
 @auth_required
 def view_campaigns():
     user = User.query.filter_by(username=session['username']).first()
+    profile_type = user.usertype
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
 
-    campaigns = Campaign.query.filter_by(campaign_status='Created').all() 
-    return render_template('view_campaigns.html', user=user, campaigns=campaigns)
+    campaigns = Campaign.query.filter_by(campaign_status='Created').all()
+    return render_template('view_campaigns.html', user=user, campaigns=campaigns, profile_type=profile_type)
+
+@app.route('/view_campaign', methods=['GET'])
+@auth_required
+def view_campaign():
+    user = User.query.filter_by(username=session['username']).first()
+    profile_type = user.usertype
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('login'))
+
+    campaigns = Campaign.query.filter_by(campaign_status='Created').all()
+    return render_template('view_campaign.html', user=user, campaigns=campaigns, profile_type=profile_type)
 
 @app.route('/campaign/<int:campaign_id>/apply', methods=['POST'])
 @auth_required
@@ -326,11 +333,174 @@ def apply_campaign(campaign_id):
         flash('This campaign already has an influencer.', 'danger')
         return redirect(url_for('view_campaigns'))
 
+    # Update campaign with influencer details
     campaign.influencer_userid = influencer.userid
+    campaign.campaign_start = datetime.utcnow()  # Set campaign start date
+    campaign.campaign_end = datetime.utcnow() + timedelta(days=campaign.campaign_duration)  # Calculate end date
     db.session.commit()
 
     flash('Successfully applied for the campaign!', 'success')
     return redirect(url_for('view_campaigns'))
+
+
+@app.route('/campaign/<int:campaign_id>/edit', methods=['GET', 'POST'])
+@auth_required
+def edit_campaign(campaign_id):
+    user = User.query.filter_by(username=session['username']).first()
+    if not user or user.usertype != 'sponsor':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('index'))
+
+    campaign = Campaign.query.get_or_404(campaign_id)
+    if campaign.sponsor_userid != user.userid:
+        flash('You do not have permission to edit this campaign.', 'danger')
+        return redirect(url_for('view_campaigns'))
+
+    categories = Category.query.order_by(Category.category_name).all()
+
+    if request.method == 'POST':
+        campaign.campaign_name = request.form['name']
+        campaign.campaign_description = request.form['description']
+        campaign.campaign_budget = request.form['budget']
+        campaign.campaign_duration = request.form['duration']
+        selected_categories = request.form.getlist('category[]')
+
+        campaign.categories = []
+        for category_id in selected_categories:
+            category = Category.query.get(category_id)
+            if category:
+                campaign.categories.append(category)
+
+        db.session.commit()
+        flash('Campaign updated successfully', 'success')
+        return redirect(url_for('user_profile', username=session['username']))
+
+    return render_template('edit_campaign.html', campaign=campaign, categories=categories)
+
+@app.route('/campaign/<int:campaign_id>/delete', methods=['POST'])
+@auth_required
+def delete_campaign(campaign_id):
+    user = User.query.filter_by(username=session['username']).first()
+    if not user or user.usertype != 'sponsor':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('index'))
+
+    campaign = Campaign.query.get_or_404(campaign_id)
+    if campaign.sponsor_userid != user.userid:
+        flash('You do not have permission to delete this campaign.', 'danger')
+        return redirect(url_for('view_campaigns'))
+
+    db.session.delete(campaign)
+    db.session.commit()
+    flash('Campaign deleted successfully', 'success')
+    return redirect(url_for('view_campaigns'))
+
+
+@app.route('/request_influencer/<int:campaign_id>', methods=['POST'])
+@auth_required
+def request_influencer(campaign_id):
+    current_user = get_current_user()
+    campaign = Campaign.query.get_or_404(campaign_id)
+    influencer_username = request.form['influencer_username']
+    influencer = User.query.filter_by(username=influencer_username, usertype='influencer').first()
+
+    if not influencer:
+        flash('Influencer not found!', 'danger')
+        return redirect(url_for('view_campaign'))
+
+    if current_user.usertype != 'sponsor' or campaign.sponsor_userid != current_user.userid:
+        abort(403)
+
+    new_request = InfluencerRequest(
+        campaign_id=campaign_id,
+        influencer_id=influencer.userid,
+        status='pending'
+    )
+    db.session.add(new_request)
+    db.session.commit()
+    flash('Influencer requested successfully!', 'success')
+    return redirect(url_for('view_campaign'))
+
+@app.route('/campaign/<int:campaign_id>/accept_influencer', methods=['POST'])
+@auth_required
+def accept_influencer(campaign_id):
+    user = User.query.filter_by(username=session['username']).first()
+    if user.usertype != 'sponsor':
+        flash('You are not a Sponsor.', 'danger')
+        return redirect(url_for('index'))
+
+    campaign = Campaign.query.get_or_404(campaign_id)
+    if campaign.sponsor_userid != user.userid:
+        flash('You do not have permission to accept applications for this campaign.', 'danger')
+        return redirect(url_for('view_campaigns'))
+
+    if campaign.influencer_userid is None:
+        flash('No influencer has applied for this campaign.', 'danger')
+        return redirect(url_for('view_campaigns'))
+
+    flash('Influencer application accepted!', 'success')
+
+    return redirect(url_for('view_campaigns'))
+
+@app.route('/campaign/<int:campaign_id>/reject_influencer', methods=['POST'])
+@auth_required
+def reject_influencer(campaign_id):
+    user = User.query.filter_by(username=session['username']).first()
+    if user.usertype != 'sponsor':
+        flash('You are not a Sponsor.', 'danger')
+        return redirect(url_for('index'))
+
+    campaign = Campaign.query.get_or_404(campaign_id)
+    if campaign.sponsor_userid != user.userid:
+        flash('You do not have permission to reject applications for this campaign.', 'danger')
+        return redirect(url_for('view_campaigns'))
+
+    if campaign.influencer_userid is None:
+        flash('No influencer has applied for this campaign.', 'danger')
+        return redirect(url_for('view_campaigns'))
+
+    flash('Influencer application rejected.', 'success')
+
+    return redirect(url_for('view_campaigns'))
+
+@app.route('/accept_campaign/<int:campaign_id>', methods=['POST'])
+@auth_required
+def accept_campaign(campaign_id):
+    current_user = get_current_user()
+    user = User.query.get(current_user.userid)
+    campaign = Campaign.query.get(campaign_id)
+    campaign_request = InfluencerRequest.query.filter_by(campaign_id=campaign_id, influencer_id=user.userid).first()
+
+    if campaign and user and user.usertype == 'influencer' and campaign_request:
+        # Update campaign and campaign request
+        campaign.influencer_userid = user.userid
+        campaign.influencer_accepted = True
+        campaign_request.status = 'accepted'
+        
+        db.session.commit()
+        flash('Campaign accepted!', 'success')
+    else:
+        flash('Failed to accept campaign.', 'danger')
+
+    return redirect(url_for('user_profile', username=current_user.username))
+
+
+
+@app.route('/reject_campaign/<int:campaign_id>', methods=['POST'])
+@auth_required
+def reject_campaign(campaign_id):
+    current_user = get_current_user()
+    request_to_reject = InfluencerRequest.query.filter_by(campaign_id=campaign_id, influencer_id=current_user.id).first()
+
+    if request_to_reject:
+        request_to_reject.status = 'rejected'
+        db.session.commit()
+        flash('Campaign request rejected!', 'success')
+    else:
+        flash('Failed to reject campaign request.', 'danger')
+
+    return redirect(url_for('user_profile', username=current_user.username))
+
 
 @app.route('/report/<int:user_id>', methods=['POST'])
 @auth_required
@@ -357,6 +527,7 @@ def report_user(user_id):
     
     flash('Report submitted successfully.', 'success')
     return redirect(url_for('user_profile', username=reported_user.username))
+
 @app.route('/admin/reports')
 @auth_required
 def view_reports():
@@ -414,7 +585,6 @@ def chart_data_user_types():
 
 @app.route('/chart_data/campaigns')
 def chart_data_campaigns():
-    from sqlalchemy import func
     campaigns = db.session.query(
         func.date(Campaign.created_at),
         func.count(Campaign.campaignid)
@@ -426,27 +596,13 @@ def chart_data_campaigns():
     }
     return jsonify(data)
 
-@app.route('/chart_data/applications')
-def chart_data_applications():
-    from sqlalchemy import func
-    applications = db.session.query(
-        Campaign.campaign_name,
-        func.count(Influencer.userid)
-    ).join(Campaign.influencers).group_by(Campaign.campaign_name).all()
-    
-    data = {
-        'labels': [a[0] for a in applications],
-        'values': [a[1] for a in applications]
-    }
-    return jsonify(data)
 
 @app.route('/chart_data/reports')
 def chart_data_reports():
-    from sqlalchemy import func
     reports = db.session.query(
-        func.date(Report.created_at),
-        func.count(Report.reportid)
-    ).group_by(func.date(Report.created_at)).all()
+        func.date(Report.timestamp),
+        func.count(Report.id)
+    ).group_by(func.date(Report.timestamp)).all()
     
     data = {
         'labels': [str(r[0]) for r in reports],
@@ -454,9 +610,40 @@ def chart_data_reports():
     }
     return jsonify(data)
 
+@app.route('/chart_data/user_campaign_performance')
+def chart_data_user_campaign_performance():
+    current_user = get_current_user()
+    user_id = current_user.userid
+    campaign_performance = db.session.query(
+        func.date(Campaign.created_at),
+        func.count(Campaign.campaignid)
+    ).filter_by(influencer_userid=user_id).group_by(func.date(Campaign.created_at)).all()
+    
+    data = {
+        'labels': [str(cp[0]) for cp in campaign_performance],
+        'values': [cp[1] for cp in campaign_performance]
+    }
+    return jsonify(data)
+
+
+@app.route('/chart_data/revenue')
+def revenue():
+    campaign_revenue = db.session.query(
+        func.strftime('%Y-%m', Campaign.start_date).label('month'),
+        func.sum(Campaign.campaign_budget).label('total_budget')
+    ).group_by('month').all()
+    
+    data = {
+        'labels': [str(cr[0]) for cr in campaign_revenue],
+        'values': [cr[1] for cr in campaign_revenue]
+    }
+    
+    return jsonify(data)
+
+
 @app.route('/charts')
 def charts():
-
+    current_user = get_current_user()
     user = current_user
     return render_template('charts.html', user=user)
 
@@ -467,3 +654,35 @@ def privacy_policy():
 @app.route('/terms')
 def terms():
     return render_template('terms.html')
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/pricing')
+def pricing():
+    return render_template('pricing.html')
+
+@app.route('/influencers')
+@auth_required
+def display_influencers():
+    influencers = User.query.join(Influencer, User.userid == Influencer.userid).all()
+    shuffle(influencers)
+    return render_template('display_influencers.html', influencers=influencers)
+
+@app.route('/sponsors')
+@auth_required
+def display_sponsors():
+    sponsors = User.query.join(Sponsor, User.userid == Sponsor.userid).all()
+    shuffle(sponsors)
+    return render_template('display_sponsors.html', sponsors=sponsors)
+
+@app.route('/search')
+def search():
+    query = request.args.get('query', '')
+    if query:
+        results = User.query.filter(User.username.contains(query) | User.name.contains(query)).all()
+    else:
+        results = []
+
+    return render_template('search_results.html', query=query, results=results)

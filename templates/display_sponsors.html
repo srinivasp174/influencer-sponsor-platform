@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    Sponsors
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Sponsors</h1>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for sponsor in sponsors %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ url_for('static', filename='profile_pic/' + sponsor.profile_pic) }}" class="card-img-top" alt="{{ sponsor.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ sponsor.name }}</h5>
+                    <p class="card-text">Username: {{ sponsor.username }}</p>
+                    <p class="card-text">Email: {{ sponsor.email }}</p>
+                    <a href="{{ url_for('user_profile', username=sponsor.username) }}" class="btn btn-primary">View Profile</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

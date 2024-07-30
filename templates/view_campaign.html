@@ -1,0 +1,78 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h1>Available Campaigns</h1>
+    <div class="container mt-3">
+        <div class="row">
+            {% for campaign in campaigns %}
+                {% if user and (
+                    (user.usertype == 'sponsor' and campaign.sponsor_userid == user.userid) or
+                    (user.usertype == 'influencer' and campaign.influencer_userid == user.userid) or
+                    (user.usertype == 'admin')
+                ) %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ campaign.campaign_name }}</h5>
+                                <p class="card-text">{{ campaign.campaign_description }}</p>
+                                <p><strong>Budget:</strong> {{ campaign.campaign_budget }}</p>
+                                <p><strong>Duration:</strong> {{ campaign.campaign_duration }} days</p>
+                                
+                                {% if user.usertype == 'sponsor' %}
+                                    <!-- Sponsor can edit or delete their campaign -->
+                                    <a href="{{ url_for('edit_campaign', campaign_id=campaign.campaignid) }}" class="btn btn-warning">Edit</a>
+                                    <form action="{{ url_for('delete_campaign', campaign_id=campaign.campaignid) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                
+                                    {% if not campaign.influencer_userid %}
+                                    <form action="{{ url_for('request_influencer', campaign_id=campaign.campaignid) }}" method="post" class="mt-3">
+                                        <div class="mb-3">
+                                            <label for="influencer_username_{{ campaign.campaignid }}" class="form-label">Influencer Username</label>
+                                            <input type="text" class="form-control" id="influencer_username_{{ campaign.campaignid }}" name="influencer_username" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-info">Request Influencer</button>
+                                    </form>  
+                                    
+                                    {% endif %}
+
+                                    <!-- Show influencers applied to the campaign -->
+                                    {% if campaign.influencers %}
+                                        <div class="mt-3">
+                                            <h6>Influencers Applied:</h6>
+                                            <ul class="list-group">
+                                                {% for influencer in campaign.influencers %}
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        {{ influencer.username }}
+                                                        <span>
+                                                            <form action="{{ url_for('accept_influencer', campaign_id=campaign.campaignid, influencer_id=influencer.influencerid) }}" method="post" class="d-inline">
+                                                                <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                                                            </form>
+                                                            <form action="{{ url_for('reject_influencer', campaign_id=campaign.campaignid, influencer_id=influencer.influencerid) }}" method="post" class="d-inline">
+                                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                                            </form>
+                                                        </span>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                
+                                {% elif user.usertype == 'influencer' %}
+                                    <!-- Influencer can only view campaign details -->
+                                    <p><strong>Applied:</strong> {{ campaign.influencer_accepted | yesno("Yes, No") }}</p>
+                                    {% if not campaign.influencer_accepted %}
+                                        <form action="{{ url_for('accept_campaign', campaign_id=campaign.campaignid) }}" method="post" class="mt-3">
+                                            <button type="submit" class="btn btn-success">Accept Campaign</button>
+                                        </form>
+                                    {% endif %}
+                                
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

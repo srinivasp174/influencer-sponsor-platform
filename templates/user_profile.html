@@ -7,7 +7,6 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row">
-        <!-- Profile Picture and Details -->
         <div class="col-md-4 text-center">
             <div class="profile-picture mb-4">
                 {% if user.profile_pic %}
@@ -25,7 +24,7 @@
                     <p><strong>Bio:</strong> {{ user.bio }}</p>
                 {% endif %}
                 <a href="{{ url_for('charts') }}" class="btn btn-outline-primary mt-3">View Charts</a>
-                {% if user_type == 'influencer' %}
+                {% if profile_type == 'influencer' %}
                     <div class="mt-4">
                         <h5>Metrics</h5>
                         <p><strong>Campaigns:</strong> {{ user.campaigns_count }}</p>
@@ -33,7 +32,6 @@
                     </div>
                 {% endif %}
             </div>
-            <!-- Social Media Links -->
             {% if user.social_media %}
                 <div class="mt-4">
                     <h5>Social Media</h5>
@@ -50,32 +48,115 @@
             {% endif %}
         </div>
 
-        <!-- Dashboard Actions -->
         <div class="col-md-8">
             <div class="profile-actions mb-4">
-                {% if profile_type == 'influencer' %}
+                {% if profile_type == 'influencer' and current_user.username == user.username %}
                     <h3>Influencer Dashboard</h3>
                     <a href="{{ url_for('view_campaigns') }}" class="btn btn-primary mb-2">View Campaigns</a>
-                    {% if current_user.username == user.username %}
-                        <a href="{{ url_for('influencer_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
-                    {% endif %}
-                {% elif profile_type == 'sponsor' %}
+                    <a href="{{ url_for('user_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
+                {% elif profile_type == 'sponsor' and current_user.username == user.username %}
                     <h3>Sponsor Dashboard</h3>
                     <a href="{{ url_for('create_campaign') }}" class="btn btn-primary mb-2">Create a Campaign</a>
-                    {% if current_user.username == user.username %}
-                        <a href="{{ url_for('influencer_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
-                    {% endif %}
+                    <a href="{{ url_for('user_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
                 {% elif profile_type == 'admin' and current_user.username == user.username %}
                     <h3>Admin Dashboard</h3>
-                    <a href="{{ url_for('view_campaigns') }}" class="btn btn-primary mb-2">View Campaigns</a>
+                    <a href="{{ url_for('view_campaign') }}" class="btn btn-primary mb-2">View Campaigns</a>
                     <a href="{{ url_for('view_reports') }}" class="btn btn-danger mb-2">View Reports</a>
-                    {% if current_user.username == user.username %}
-                        <a href="{{ url_for('influencer_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
-                    {% endif %}
+                    <a href="{{ url_for('user_profile_edit') }}" class="btn btn-secondary mb-2">Edit Profile</a>
                 {% endif %}
             </div>
 
-            <!-- Report User Form -->
+            {% if profile_type == 'influencer' and user.username == current_user.username %}
+            <div class="campaigns">
+                <h3>Campaigns</h3>
+                {% if campaigns %}
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        {% for campaign in campaigns %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    {% if campaign.campaign_image %}
+                                        <img src="{{ url_for('static', filename='campaign_images/' + campaign.campaign_image) }}" class="card-img-top" alt="{{ campaign.campaign_name }}">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='default_campaign_image.jpeg') }}" class="card-img-top" alt="Default Campaign Image">
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ campaign.campaign_name }}</h5>
+                                        <p class="card-text">{{ campaign.campaign_description }}</p>
+                                        <p><strong>Budget:</strong> {{ campaign.campaign_budget }}</p>
+                                        <p><strong>Duration:</strong> {{ campaign.campaign_duration }} days</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No campaigns available.</p>
+                {% endif %}
+            </div>
+        
+
+            <div class="campaign-requests mt-4">
+                <h3>Campaign Requests</h3>
+                {% if requests %}
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        {% for request in requests %}
+                            {% if request.status == 'pending' %}
+                                <div class="col">
+                                    <div class="card h-100">
+                                        {% if request.campaign.campaign_image %}
+                                            <img src="{{ url_for('static', filename='campaign_images/' + request.campaign.campaign_image) }}" class="card-img-top" alt="{{ request.campaign.campaign_name }}">
+                                        {% else %}
+                                            <img src="{{ url_for('static', filename='default_campaign_image.jpeg') }}" class="card-img-top" alt="Default Campaign Image">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ request.campaign.campaign_name }}</h5>
+                                            <p class="card-text">{{ request.campaign.campaign_description }}</p>
+                                            <p><strong>Status:</strong> {{ request.status }}</p>
+                                            <a href="{{ url_for('view_campaign', campaign_id=request.campaign_id) }}" class="btn btn-primary">View Campaign</a>
+                                            {% if request.status == 'pending' %}
+                                                <form action="{{ url_for('accept_campaign', campaign_id=request.campaign_id) }}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-success">Accept</button>
+                                                </form>
+                                                <a href="{{ url_for('reject_campaign', campaign_id=request.campaign_id) }}" class="btn btn-danger mt-2">Reject</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No campaign requests found.</p>
+                {% endif %}
+            </div>
+            {% elif profile_type == 'sponsor' and user.username == current_user.username %}
+                <div class="campaigns">
+                    <h3>Campaigns</h3>
+                    {% if campaigns %}
+                        <div class="row row-cols-1 row-cols-md-2 g-4">
+                            {% for campaign in campaigns %}
+                                <div class="col">
+                                    <div class="card h-100">
+                                        {% if campaign.campaign_image %}
+                                            <img src="{{ url_for('static', filename='campaign_images/' + campaign.campaign_image) }}" class="card-img-top" alt="{{ campaign.campaign_name }}">
+                                        {% else %}
+                                            <img src="{{ url_for('static', filename='default_campaign_image.jpeg') }}" class="card-img-top" alt="Default Campaign Image">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ campaign.campaign_name }}</h5>
+                                            <p class="card-text">{{ campaign.campaign_description }}</p>
+                                            <a href="{{ url_for('view_campaign', campaign_id=campaign.campaignid) }}" class="btn btn-primary">View Campaign</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No campaigns available.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
             {% if current_user and current_user.username != user.username and profile_type != 'admin' %}
                 <div class="report-user mt-4">
                     <h4>Report User</h4>
@@ -91,5 +172,4 @@
         </div>
     </div>
 </div>
-
 {% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h1>Edit Campaign</h1>
+    <div class="container mt-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ campaign.campaign_name }}</h5>
+                <p class="card-text">{{ campaign.campaign_description }}</p>
+                <p><strong>Budget:</strong> {{ campaign.campaign_budget }}</p>
+                <p><strong>Duration:</strong> {{ campaign.campaign_duration }} days</p>
+
+                <form action="{{ url_for('edit_campaign', campaign_id=campaign.campaignid) }}" method="post">
+                    <h4>Edit Campaign</h4>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Campaign Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ campaign.campaign_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" required>{{ campaign.campaign_description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="budget" class="form-label">Budget</label>
+                        <input type="number" class="form-control" id="budget" name="budget" value="{{ campaign.campaign_budget }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="duration" class="form-label">Duration (days)</label>
+                        <input type="number" class="form-control" id="duration" name="duration" value="{{ campaign.campaign_duration }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categories</label>
+                        <select multiple class="form-control" name="category[]">
+                            {% for category in categories %}
+                                <option value="{{ category.categoryid }}" {% if category in campaign.categories %}selected{% endif %}>
+                                    {{ category.category_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" name="edit" class="btn btn-primary">Save Changes</button>
+                    <button type="submit" name="delete" class="btn btn-danger">Delete Campaign</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

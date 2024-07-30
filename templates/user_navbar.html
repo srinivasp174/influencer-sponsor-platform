@@ -5,23 +5,24 @@
             COLLABSPHERE @{{ current_user.username }}
         </a>
         
-        <form class="d-flex ms-auto" role="search">
-            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+        <form class="d-flex ms-auto" role="search" action="{{ url_for('search') }}" method="GET">
+            <input class="form-control me-2" type="search" name="query" placeholder="Search" aria-label="Search">
             <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+        
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarScroll" aria-controls="navbarScroll" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarScroll">
             <ul class="navbar-nav ms-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{{ url_for('user_profile', username=current_user.username) }}">Home</a>
+                    <a class="nav-link active" aria-current="page" href="{{ url_for('display_influencers') }}">Influencers</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{ url_for('user_profile', username=current_user.username) }}">Profile</a>
+                    <a class="nav-link active" href="{{ url_for('display_sponsors') }}">Sponsors</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="#">Collaboration</a>
+                    <a class="nav-link active" href="{{ url_for('view_campaigns') }}">Campaigns</a>
                 </li>
             </ul>
             
@@ -32,7 +33,8 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('user_profile', username=current_user.username) }}"><i class="bi bi-person"></i> Profile</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('influencer_profile_edit') }}"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('user_profile_edit') }}"><i class="bi bi-gear"></i> Edit profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('charts')}}"><i class="bi bi-bar-chart"></i> View data</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                     </ul>

@@ -2,19 +2,13 @@
 
 {% block content %}
 <div class="container">
-<script src="/static/js/autocomplete.js"></script>
+    <script src="/static/js/autocomplete.js"></script>
     <div class="mt-3 custom-padding">
         <div class="row">
-            <div class="col-md-2">
-                <p><a href="{{ url_for('influencer_profile_edit') }}">Profile</a></p>
-                <p><a href="{{ url_for('influencer_account_edit') }}">Account</a></p>
-                <p><a href="{{ url_for('influencer_appearance_edit') }}">Appearance</a></p>
-                <p><a href="{{ url_for('influencer_security_edit') }}">Security</a></p>
-                <p><a href="{{ url_for('influencer_collabs_edit') }}">Collaborations</a></p>
-            </div>
             <div class="col-md-6">
                 <h2>Edit Profile</h2>
                 <hr>
+                
                 <form action="{{ url_for('upload_profile_pic') }}" method="post" enctype="multipart/form-data" class="mt-3">
                     <div class="row">
                         <div class="col-md-10 mt-3">
@@ -28,7 +22,9 @@
                         </div>
                     </div>
                 </form>
-                <form action="{{ url_for('influencer_profile_edit') }}" method="post">
+                
+                
+                <form action="{{ url_for('user_profile_edit') }}" method="post">
                     <div class="row g-2">
                         <div class="col-md-6 mt-4">
                             <label for="firstname"><strong>First Name</strong></label>
@@ -37,6 +33,12 @@
                         <div class="col-md-6 mt-4">
                             <label for="lastname"><strong>Last Name</strong></label>
                             <input type="text" class="form-control mt-2" id="lastname" name="lastname" value="{{ user.name.split(' ')[-1] }}" required aria-label="Last Name">
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-12 mt-4">
+                            <label for="username"><strong>Username</strong></label>
+                            <input type="text" class="form-control mt-2" id="username" name="username" value="{{ user.username }}" required aria-label="Username">
                         </div>
                     </div>
                     <div class="row g-2">
@@ -59,21 +61,43 @@
                         </div>
                     </div>
                     {% endif %}
+                    <div class="form-group">
+                        <label for="twitter">Twitter</label>
+                        <input type="text" class="form-control" id="twitter" name="twitter" placeholder="Twitter URL" value="{{ user.twitter }}">
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="facebook">Facebook</label>
+                        <input type="text" class="form-control" id="facebook" name="facebook" placeholder="Facebook URL" value="{{ user.facebook }}">
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="instagram">Instagram</label>
+                        <input type="text" class="form-control" id="instagram" name="instagram" placeholder="Instagram URL" value="{{ user.instagram }}">
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="linkedin">LinkedIn</label>
+                        <input type="text" class="form-control" id="linkedin" name="linkedin" placeholder="LinkedIn URL" value="{{ user.linkedin }}">
+                    </div>
                     <div class="row g-2">
-                        <div class="col-md-3 mt-4">
-                            <button type="submit" class="btn btn-primary w-100" aria-label="Save Changes">Save Changes</button>
+                        <div class="col-md-12 mt-4">
+                            <label for="password"><strong>New Password</strong></label>
+                            <input type="password" class="form-control mt-2" id="password" name="password" aria-label="New Password">
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-12 mt-4">
+                            <label for="confirm_password"><strong>Confirm New Password</strong></label>
+                            <input type="password" class="form-control mt-2" id="confirm_password" name="confirm_password" aria-label="Confirm New Password">
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-4">
+                        <div class="col-md-12">
+                            <button type="submit" class="btn btn-primary w-100">Save Changes</button>
                         </div>
                     </div>
                 </form>
-            </div>
-            <div class="col-md-2 offset-md-1">
-                <div class="profile-picture d-flex justify-content-center align-items-center">
-                    {% if user.profile_pic %}
-                        <img src="{{ url_for('static', filename='profile_pic/' + user.profile_pic) }}" alt="Profile Picture" class="img-fluid rounded-circle" width="200">
-                    {% else %}
-                        <img src="{{ url_for('static', filename='profile_pic/default_profile_pic.jpg') }}" alt="Default Profile Picture" class="rounded-circle" width="200">
-                    {% endif %}
-                </div>
             </div>
         </div>
     </div>
