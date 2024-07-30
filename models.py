@@ -69,6 +69,8 @@ class Campaign(db.Model):
     campaign_image = db.Column(db.String(256), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     categories = db.relationship('Category', secondary=campaign_category, backref=db.backref('campaigns', lazy='dynamic'))
+    influencer_accepted = db.Column(db.Boolean, default=False)
+
 
 class Category(db.Model):
     categoryid = db.Column(db.Integer, primary_key=True)

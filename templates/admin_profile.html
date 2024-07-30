@@ -28,7 +28,6 @@
         <div class="col-md-8">
             <a href="{{ url_for('view_campaigns') }}">campaigns</a>
         </div>
-        <!-- profile.html -->
 {% if current_user.is_authenticated and current_user.id != user.id %}
 <a href="{{ url_for('report_user', user_id=user.id) }}" class="btn btn-warning">Report User</a>
 {% endif %}

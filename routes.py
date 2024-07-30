@@ -73,12 +73,9 @@ def login():
         session['name'] = user.name
         session['email'] = user.email
 
-        # Determine profile type
-        profile_type = 'influencer' if user.usertype == 'influencer' else 'sponsor' if user.usertype == 'sponsor' else 'admin' if user.usertype == 'admin' else 'unknown'
+        user.usertype = 'influencer' if user.usertype == 'influencer' else 'sponsor' if user.usertype == 'sponsor' else 'admin' if user.usertype == 'admin' else 'unknown'
         
         return redirect(url_for('user_profile', username=user.username))
-
-    return render_template('login.html')
 
     return render_template('login.html')
 
@@ -324,7 +321,7 @@ def apply_campaign(campaign_id):
     user = User.query.filter_by(username=session['username']).first()
     if user.usertype != 'influencer':
         flash('You are not an Influencer.', 'danger')
-        return redirect(url_for('index'))  # Adjust this redirect as necessary
+        return redirect(url_for('user_profile', username=session['username'])) 
 
     influencer = Influencer.query.filter_by(userid=user.userid).first()
     campaign = Campaign.query.get_or_404(campaign_id)
@@ -333,15 +330,14 @@ def apply_campaign(campaign_id):
         flash('This campaign already has an influencer.', 'danger')
         return redirect(url_for('view_campaigns'))
 
-    # Update campaign with influencer details
+
     campaign.influencer_userid = influencer.userid
-    campaign.campaign_start = datetime.utcnow()  # Set campaign start date
-    campaign.campaign_end = datetime.utcnow() + timedelta(days=campaign.campaign_duration)  # Calculate end date
+    campaign.campaign_start = datetime.utcnow() 
+    campaign.campaign_end = datetime.utcnow() + timedelta(days=campaign.campaign_duration)
     db.session.commit()
 
     flash('Successfully applied for the campaign!', 'success')
     return redirect(url_for('view_campaigns'))
-
 
 @app.route('/campaign/<int:campaign_id>/edit', methods=['GET', 'POST'])
 @auth_required
@@ -349,7 +345,7 @@ def edit_campaign(campaign_id):
     user = User.query.filter_by(username=session['username']).first()
     if not user or user.usertype != 'sponsor':
         flash('Access denied.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
 
     campaign = Campaign.query.get_or_404(campaign_id)
     if campaign.sponsor_userid != user.userid:
@@ -383,7 +379,7 @@ def delete_campaign(campaign_id):
     user = User.query.filter_by(username=session['username']).first()
     if not user or user.usertype != 'sponsor':
         flash('Access denied.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
 
     campaign = Campaign.query.get_or_404(campaign_id)
     if campaign.sponsor_userid != user.userid:
@@ -427,7 +423,7 @@ def accept_influencer(campaign_id):
     user = User.query.filter_by(username=session['username']).first()
     if user.usertype != 'sponsor':
         flash('You are not a Sponsor.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
 
     campaign = Campaign.query.get_or_404(campaign_id)
     if campaign.sponsor_userid != user.userid:
@@ -448,7 +444,7 @@ def reject_influencer(campaign_id):
     user = User.query.filter_by(username=session['username']).first()
     if user.usertype != 'sponsor':
         flash('You are not a Sponsor.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
 
     campaign = Campaign.query.get_or_404(campaign_id)
     if campaign.sponsor_userid != user.userid:
@@ -472,7 +468,6 @@ def accept_campaign(campaign_id):
     campaign_request = InfluencerRequest.query.filter_by(campaign_id=campaign_id, influencer_id=user.userid).first()
 
     if campaign and user and user.usertype == 'influencer' and campaign_request:
-        # Update campaign and campaign request
         campaign.influencer_userid = user.userid
         campaign.influencer_accepted = True
         campaign_request.status = 'accepted'
@@ -483,8 +478,6 @@ def accept_campaign(campaign_id):
         flash('Failed to accept campaign.', 'danger')
 
     return redirect(url_for('user_profile', username=current_user.username))
-
-
 
 @app.route('/reject_campaign/<int:campaign_id>', methods=['POST'])
 @auth_required
@@ -534,7 +527,7 @@ def view_reports():
     user = User.query.filter_by(username=session.get('username')).first()
     if not user:
         flash('User not found.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
     if user.usertype != 'admin':
         flash('You do not have permission to view this page.', 'danger')
         return redirect(url_for('user_profile', username=session['username']))
@@ -547,10 +540,10 @@ def resolve_report(report_id):
     user = User.query.filter_by(username=session.get('username')).first()
     if not user:
         flash('User not found.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
     if user.usertype != 'admin':
         flash('You do not have permission to perform this action.', 'danger')
-        return redirect(url_for('index'))
+        return redirect(url_for('user_profile', username=session['username']))
     report = Report.query.get_or_404(report_id)
     report.status = 'Resolved'
     db.session.commit()

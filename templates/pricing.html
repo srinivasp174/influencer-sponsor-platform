@@ -2,57 +2,19 @@
 
 {% block content %}
 
-<style>
-    .pricing-header {
-        background-color: #f8f9fa;
-        padding: 3rem 1rem;
-        text-align: center;
-    }
-    .pricing-header h1 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-    }
-    .pricing-header p {
-        font-size: 1.2rem;
-        margin-bottom: 0;
-    }
-    .card-deck .card {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .card-deck .card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-    .card-deck .card-header {
-        background-color: #007bff;
-        color: white;
-        text-align: center;
-        border-radius: 10px 10px 0 0;
-    }
-    .card-deck .card-body {
-        text-align: center;
-    }
-    .card-deck .card-body .btn {
-        margin-top: 1rem;
-    }
-</style>
-
-<div class="pricing-header">
-    <h1>Our Pricing Plans</h1>
-    <p>Choose the plan that best fits your needs and start connecting with influencers or sponsors today.</p>
+<div class="bg-light py-5 text-center">
+    <h1 class="display-4">Our Pricing Plans</h1>
+    <p class="lead">Choose the plan that best fits your needs and start connecting with influencers or sponsors today.</p>
 </div>
 
 <div class="container mt-5">
     <div class="row">
         <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
                     <h3>Basic</h3>
                 </div>
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h2 class="card-title">$10/month</h2>
                     <p class="card-text">Ideal for small businesses and individual influencers.</p>
                     <ul class="list-unstyled">
@@ -65,11 +27,11 @@
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
                     <h3>Standard</h3>
                 </div>
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h2 class="card-title">$30/month</h2>
                     <p class="card-text">Perfect for growing businesses and established influencers.</p>
                     <ul class="list-unstyled">
@@ -82,11 +44,11 @@
             </div>
         </div>
         <div class="col-md-4 mb-4">
-            <div class="card">
-                <div class="card-header">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
                     <h3>Premium</h3>
                 </div>
-                <div class="card-body">
+                <div class="card-body text-center">
                     <h2 class="card-title">$50/month</h2>
                     <p class="card-text">Best for large businesses and top influencers.</p>
                     <ul class="list-unstyled">
@@ -101,6 +63,7 @@
         </div>
     </div>
 </div>
+
 
 <footer class="bg-dark text-white text-center py-4">
     <div class="container">
@@ -120,9 +83,9 @@
                 <h5>Contact Us</h5>
                 <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:contact@example.com" class="text-white">contact@example.com</a></p>
                 <p>Follow us on social media:</p>
-                <div class="footer-social-icons">
-                    <a href="https://facebook.com" aria-label="Facebook" class="text-white"><i class="bi bi-facebook"></i></a>
-                    <a href="https://x.com" aria-label="Twitter" class="text-white"><i class="bi bi-twitter"></i></a>
+                <div class="d-flex justify-content-center">
+                    <a href="https://facebook.com" aria-label="Facebook" class="text-white me-2"><i class="bi bi-facebook"></i></a>
+                    <a href="https://x.com" aria-label="Twitter" class="text-white me-2"><i class="bi bi-twitter"></i></a>
                     <a href="https://instagram.com" aria-label="Instagram" class="text-white"><i class="bi bi-instagram"></i></a>
                 </div>
             </div>
@@ -132,6 +95,5 @@
         </div>
     </div>
 </footer>
-
 
 {% endblock %}

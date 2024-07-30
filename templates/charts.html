@@ -8,7 +8,6 @@
 <div class="container mt-5" id="chartsContainer" data-usertype="{{ current_user.usertype }}">
     <h1 class="mb-4 text-center">Analytics</h1>
 
-    <!-- Admin Charts -->
     <div class="row admin-charts" style="display: none;">
         <div class="col-lg-6 col-md-12 mb-4">
             <div class="card">
@@ -52,7 +51,7 @@
       
     </div>
 
-    <!-- Influencer and Sponsor Charts -->
+
     <div class="row influencer-charts sponsor-charts" style="display: none;">
         <div class="col-lg-6 col-md-12 mb-4">
             <div class="card">
@@ -88,7 +87,7 @@
   async function fetchData(endpoint) {
     const response = await fetch(endpoint);
     const data = await response.json();
-    console.log(`Data fetched from ${endpoint}:`, data); // Debugging: log fetched data
+    console.log(`Data fetched from ${endpoint}:`, data);
     return data;
   }
 
@@ -124,7 +123,7 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     const userType = document.getElementById('chartsContainer').dataset.usertype;
-    console.log(`User type: ${userType}`); // Debugging: log user type
+    console.log(`User type: ${userType}`);
 
     if (userType === 'admin') {
       document.querySelectorAll('.admin-charts').forEach(el => el.style.display = 'block');
