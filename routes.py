@@ -468,6 +468,7 @@ def accept_campaign(campaign_id):
     campaign_request = InfluencerRequest.query.filter_by(campaign_id=campaign_id, influencer_id=user.userid).first()
 
     if campaign and user and user.usertype == 'influencer' and campaign_request:
+
         campaign.influencer_userid = user.userid
         campaign.influencer_accepted = True
         campaign_request.status = 'accepted'
