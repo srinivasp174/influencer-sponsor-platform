@@ -117,7 +117,10 @@
                                                 <form action="{{ url_for('accept_campaign', campaign_id=request.campaign_id) }}" method="post" class="d-inline">
                                                     <button type="submit" class="btn btn-success">Accept</button>
                                                 </form>
-                                                <a href="{{ url_for('reject_campaign', campaign_id=request.campaign_id) }}" class="btn btn-danger mt-2">Reject</a>
+                                                <form action="{{ url_for('reject_campaign', campaign_id=request.campaign_id) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-danger mt-2">Reject</button>
+                                                </form>
+                                                
                                             {% endif %}
                                         </div>
                                     </div>

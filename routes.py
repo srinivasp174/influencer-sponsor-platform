@@ -484,7 +484,7 @@ def accept_campaign(campaign_id):
 @auth_required
 def reject_campaign(campaign_id):
     current_user = get_current_user()
-    request_to_reject = InfluencerRequest.query.filter_by(campaign_id=campaign_id, influencer_id=current_user.id).first()
+    request_to_reject = InfluencerRequest.query.filter_by(campaign_id=campaign_id, influencer_id=current_user.userid).first()
 
     if request_to_reject:
         request_to_reject.status = 'rejected'
@@ -493,7 +493,7 @@ def reject_campaign(campaign_id):
     else:
         flash('Failed to reject campaign request.', 'danger')
 
-    return redirect(url_for('user_profile', username=current_user.username))
+    return redirect(url_for('user_profile', username=session['username']))
 
 
 @app.route('/report/<int:user_id>', methods=['POST'])
